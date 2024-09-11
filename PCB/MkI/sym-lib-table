@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "14_Seg_2_Digit_Display")(type "KiCad")(uri "${KIPRJMOD}/Project_Symbols/14_Seg_2_Digit_Display.kicad_sym")(options "")(descr ""))
+)
