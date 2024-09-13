@@ -3,6 +3,8 @@
 #include "ch32v003fun.h"
 #include "lib_gpioctrl.h"
 
+#include "font.h"
+
 #include <stdio.h>
 
 /*** Globals *****************************************************************/
