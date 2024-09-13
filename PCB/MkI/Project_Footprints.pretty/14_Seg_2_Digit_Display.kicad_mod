@@ -280,15 +280,24 @@
 		(uuid "8db32f2e-ec4b-47e6-b0df-7af4bf624d45")
 	)
 	(fp_text user "1"
-		(at -11.684 7.62 0)
+		(at -10.16 9.398 0)
 		(unlocked yes)
 		(layer "F.SilkS")
 		(uuid "0a788aaa-0f36-4714-942f-fd69d7916dd3")
 		(effects
 			(font
+				(face "Roboto Mono")
 				(size 1 1)
 				(thickness 0.2)
 				(bold yes)
+			)
+		)
+		(render_cache "1" 0
+			(polygon
+				(pts
+					(xy -10.015407 9.813) (xy -10.015407 8.812825) (xy -10.025665 8.812825) (xy -10.46115 8.970117)
+					(xy -10.46115 9.136447) (xy -10.208359 9.045588) (xy -10.208359 9.813)
+				)
 			)
 		)
 	)

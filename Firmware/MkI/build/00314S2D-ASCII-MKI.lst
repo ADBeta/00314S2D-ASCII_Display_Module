@@ -1,0 +1,287 @@
+
+build/00314S2D-ASCII-MKI.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .init:
+
+00000000 <InterruptVector>:
+   0:	0fc0006f          	j	fc <handle_reset>
+   4:	00000000          	.word	0x00000000
+   8:	00000178          	.word	0x00000178
+   c:	00000176          	.word	0x00000176
+	...
+  30:	00000176          	.word	0x00000176
+  34:	00000000          	.word	0x00000000
+  38:	00000176          	.word	0x00000176
+  3c:	00000000          	.word	0x00000000
+  40:	00000176          	.word	0x00000176
+  44:	00000176          	.word	0x00000176
+  48:	00000176          	.word	0x00000176
+  4c:	00000176          	.word	0x00000176
+  50:	00000176          	.word	0x00000176
+  54:	00000176          	.word	0x00000176
+  58:	00000176          	.word	0x00000176
+  5c:	00000176          	.word	0x00000176
+  60:	00000176          	.word	0x00000176
+  64:	00000176          	.word	0x00000176
+  68:	00000176          	.word	0x00000176
+  6c:	00000176          	.word	0x00000176
+  70:	00000176          	.word	0x00000176
+  74:	00000176          	.word	0x00000176
+  78:	00000176          	.word	0x00000176
+  7c:	00000176          	.word	0x00000176
+  80:	00000176          	.word	0x00000176
+  84:	00000176          	.word	0x00000176
+  88:	00000176          	.word	0x00000176
+  8c:	00000176          	.word	0x00000176
+  90:	00000176          	.word	0x00000176
+  94:	00000176          	.word	0x00000176
+  98:	00000176          	.word	0x00000176
+  9c:	0000                	.insn	2, 0x
+	...
+
+Disassembly of section .text:
+
+000000a0 <DelaySysTick>:
+  a0:	e000f7b7          	lui	a5,0xe000f
+  a4:	479c                	lw	a5,8(a5)
+  a6:	e000f737          	lui	a4,0xe000f
+  aa:	953e                	add	a0,a0,a5
+  ac:	471c                	lw	a5,8(a4)
+  ae:	8f89                	sub	a5,a5,a0
+  b0:	fe07cee3          	bltz	a5,ac <DelaySysTick+0xc>
+  b4:	8082                	ret
+
+000000b6 <gpio_set_mode.constprop.0>:
+	
+	// Make array of uint8_t from [pin] enum. See definition for details
+	uint8_t *byte = (uint8_t *)&pin;
+	
+	// Set the RCC Register to enable clock on the specified port
+	GPIO_RCC->APB2PCENR |= (RCC_APB2PCENR_AFIO | (RCC_APB2PCENR_IOPxEN << byte[0]));
+  b6:	400216b7          	lui	a3,0x40021
+  ba:	4e90                	lw	a2,24(a3)
+  bc:	4791                	li	a5,4
+  be:	00a797b3          	sll	a5,a5,a0
+  c2:	8fd1                	or	a5,a5,a2
+  c4:	0017e793          	ori	a5,a5,1
+  c8:	ce9c                	sw	a5,24(a3)
+  ca:	0ff57713          	zext.b	a4,a0
+
+	// Clear then set the GPIO Config Register
+	GPIO_PORT_MAP[ byte[0] ]->CFGLR &=        ~(0x0F  << (4 * byte[1]));
+  ce:	070a                	slli	a4,a4,0x2
+  d0:	27000793          	li	a5,624
+  d4:	97ba                	add	a5,a5,a4
+  d6:	4398                	lw	a4,0(a5)
+  d8:	8119                	srli	a0,a0,0x6
+  da:	3fc57513          	andi	a0,a0,1020
+  de:	4314                	lw	a3,0(a4)
+  e0:	47bd                	li	a5,15
+  e2:	00a797b3          	sll	a5,a5,a0
+  e6:	fff7c793          	not	a5,a5
+  ea:	8ff5                	and	a5,a5,a3
+  ec:	c31c                	sw	a5,0(a4)
+	GPIO_PORT_MAP[ byte[0] ]->CFGLR |=  (mode & 0x0F) << (4 * byte[1]);
+  ee:	4314                	lw	a3,0(a4)
+  f0:	4785                	li	a5,1
+  f2:	00a797b3          	sll	a5,a5,a0
+  f6:	8fd5                	or	a5,a5,a3
+  f8:	c31c                	sw	a5,0(a4)
+
+	// If [mode] is INPUT_PULLUP or INPUT_PULLDOWN, set the [OUTDR] Register
+	if(mode == INPUT_PULLUP || mode == INPUT_PULLDOWN)
+		gpio_digital_write(pin, mode >> 4);
+}
+  fa:	8082                	ret
+
+000000fc <handle_reset>:
+  fc:	20000197          	auipc	gp,0x20000
+ 100:	70418193          	addi	gp,gp,1796 # 20000800 <_eusrstack>
+ 104:	00018113          	mv	sp,gp
+ 108:	08000513          	li	a0,128
+ 10c:	30051073          	csrw	mstatus,a0
+ 110:	468d                	li	a3,3
+ 112:	00000517          	auipc	a0,0x0
+ 116:	eee50513          	addi	a0,a0,-274 # 0 <InterruptVector>
+ 11a:	8d55                	or	a0,a0,a3
+ 11c:	30551073          	csrw	mtvec,a0
+ 120:	20000517          	auipc	a0,0x20000
+ 124:	ee050513          	addi	a0,a0,-288 # 20000000 <_data_vma>
+ 128:	20000597          	auipc	a1,0x20000
+ 12c:	ed858593          	addi	a1,a1,-296 # 20000000 <_data_vma>
+ 130:	4601                	li	a2,0
+ 132:	00b55663          	bge	a0,a1,13e <handle_reset+0x42>
+ 136:	c110                	sw	a2,0(a0)
+ 138:	0511                	addi	a0,a0,4
+ 13a:	feb54ee3          	blt	a0,a1,136 <handle_reset+0x3a>
+ 13e:	2bc00513          	li	a0,700
+ 142:	20000597          	auipc	a1,0x20000
+ 146:	ebe58593          	addi	a1,a1,-322 # 20000000 <_data_vma>
+ 14a:	20000617          	auipc	a2,0x20000
+ 14e:	eb660613          	addi	a2,a2,-330 # 20000000 <_data_vma>
+ 152:	00c58863          	beq	a1,a2,162 <handle_reset+0x66>
+ 156:	4114                	lw	a3,0(a0)
+ 158:	c194                	sw	a3,0(a1)
+ 15a:	0511                	addi	a0,a0,4
+ 15c:	0591                	addi	a1,a1,4
+ 15e:	fec59ae3          	bne	a1,a2,152 <handle_reset+0x56>
+ 162:	e000f7b7          	lui	a5,0xe000f
+ 166:	4705                	li	a4,1
+ 168:	c398                	sw	a4,0(a5)
+ 16a:	1e800793          	li	a5,488
+ 16e:	34179073          	csrw	mepc,a5
+ 172:	30200073          	mret
+
+00000176 <ADC1_IRQHandler>:
+ 176:	a001                	j	176 <ADC1_IRQHandler>
+
+00000178 <NMI_Handler>:
+ 178:	40021737          	lui	a4,0x40021
+ 17c:	471c                	lw	a5,8(a4)
+ 17e:	008006b7          	lui	a3,0x800
+ 182:	8fd5                	or	a5,a5,a3
+ 184:	c71c                	sw	a5,8(a4)
+
+00000186 <SystemInit>:
+ 186:	400227b7          	lui	a5,0x40022
+ 18a:	4705                	li	a4,1
+ 18c:	c398                	sw	a4,0(a5)
+ 18e:	400217b7          	lui	a5,0x40021
+ 192:	01080737          	lui	a4,0x1080
+ 196:	0007a223          	sw	zero,4(a5) # 40021004 <_eusrstack+0x20020804>
+ 19a:	08170713          	addi	a4,a4,129 # 1080081 <lib_gpioctrl.c.e4f3fe8f+0x107df18>
+ 19e:	c398                	sw	a4,0(a5)
+ 1a0:	009f0737          	lui	a4,0x9f0
+ 1a4:	c798                	sw	a4,8(a5)
+ 1a6:	40021737          	lui	a4,0x40021
+ 1aa:	431c                	lw	a5,0(a4)
+ 1ac:	00679693          	slli	a3,a5,0x6
+ 1b0:	fe06dde3          	bgez	a3,1aa <SystemInit+0x24>
+ 1b4:	435c                	lw	a5,4(a4)
+ 1b6:	400216b7          	lui	a3,0x40021
+ 1ba:	9bf1                	andi	a5,a5,-4
+ 1bc:	0027e793          	ori	a5,a5,2
+ 1c0:	c35c                	sw	a5,4(a4)
+ 1c2:	4721                	li	a4,8
+ 1c4:	42dc                	lw	a5,4(a3)
+ 1c6:	8bb1                	andi	a5,a5,12
+ 1c8:	fee79ee3          	bne	a5,a4,1c4 <SystemInit+0x3e>
+ 1cc:	e00007b7          	lui	a5,0xe0000
+ 1d0:	0f878793          	addi	a5,a5,248 # e00000f8 <_eusrstack+0xbffff8f8>
+ 1d4:	0007a023          	sw	zero,0(a5)
+ 1d8:	e00007b7          	lui	a5,0xe0000
+ 1dc:	0f478793          	addi	a5,a5,244 # e00000f4 <_eusrstack+0xbffff8f4>
+ 1e0:	08000713          	li	a4,128
+ 1e4:	c398                	sw	a4,0(a5)
+ 1e6:	8082                	ret
+
+000001e8 <main>:
+
+
+
+/*** Main ********************************************************************/
+int main()
+{
+ 1e8:	1151                	addi	sp,sp,-12
+ 1ea:	c406                	sw	ra,8(sp)
+ 1ec:	c026                	sw	s1,0(sp)
+ 1ee:	c222                	sw	s0,4(sp)
+	SystemInit();
+ 1f0:	3f59                	jal	186 <SystemInit>
+
+	Delay_Ms(5000);
+ 1f2:	01c9c537          	lui	a0,0x1c9c
+ 1f6:	38050513          	addi	a0,a0,896 # 1c9c380 <lib_gpioctrl.c.e4f3fe8f+0x1c9a217>
+ 1fa:	355d                	jal	a0 <DelaySysTick>
+
+
+	// Enable Alternate GPIO Funtionality and disable SWIO
+	RCC->APB2PCENR |= RCC_APB2Periph_AFIO;
+ 1fc:	40021737          	lui	a4,0x40021
+ 200:	4f1c                	lw	a5,24(a4)
+	AFIO->PCFR1  |=  0x04000000;
+ 202:	040006b7          	lui	a3,0x4000
+	RCC->APB2PCENR |= RCC_APB2Periph_AFIO;
+ 206:	0017e793          	ori	a5,a5,1
+ 20a:	cf1c                	sw	a5,24(a4)
+	AFIO->PCFR1  |=  0x04000000;
+ 20c:	40010737          	lui	a4,0x40010
+ 210:	435c                	lw	a5,4(a4)
+ 212:	28000493          	li	s1,640
+ 216:	8fd5                	or	a5,a5,a3
+ 218:	c35c                	sw	a5,4(a4)
+
+	for(uint8_t p = 0; p < 15; p++)
+	{
+		gpio_set_mode(disp_pin[p], OUTPUT_10MHZ_PP);
+ 21a:	4080                	lw	s0,0(s1)
+	for(uint8_t p = 0; p < 15; p++)
+ 21c:	0491                	addi	s1,s1,4
+		gpio_set_mode(disp_pin[p], OUTPUT_10MHZ_PP);
+ 21e:	8522                	mv	a0,s0
+ 220:	3d59                	jal	b6 <gpio_set_mode.constprop.0>
+inline void gpio_digital_write(const GPIO_PIN pin, const GPIO_STATE state)
+{
+	// Make array of uint8_t from [pin] enum. See definition for details
+	uint8_t *byte = (uint8_t *)&pin;
+
+	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
+ 222:	00845613          	srli	a2,s0,0x8
+	if(state == GPIO_LOW) mask = mask << 16;  // Shift by 16 if LOW, to Reset
+
+	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
+ 226:	0ff47413          	zext.b	s0,s0
+ 22a:	040a                	slli	s0,s0,0x2
+ 22c:	27000713          	li	a4,624
+	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
+ 230:	4785                	li	a5,1
+	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
+ 232:	943a                	add	s0,s0,a4
+	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
+ 234:	00c797b3          	sll	a5,a5,a2
+	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
+ 238:	4010                	lw	a2,0(s0)
+ 23a:	ca1c                	sw	a5,16(a2)
+	for(uint8_t p = 0; p < 15; p++)
+ 23c:	2bc00693          	li	a3,700
+ 240:	fcd49de3          	bne	s1,a3,21a <main+0x32>
+		gpio_digital_write(disp_pin[p], GPIO_HIGH);
+
+	}
+
+	gpio_set_mode(GPIO_PD7, OUTPUT_10MHZ_PP);
+ 244:	70300513          	li	a0,1795
+	
+
+	while(1)
+	{
+		Delay_Ms(100);
+ 248:	000924b7          	lui	s1,0x92
+	gpio_set_mode(GPIO_PD7, OUTPUT_10MHZ_PP);
+ 24c:	35ad                	jal	b6 <gpio_set_mode.constprop.0>
+		Delay_Ms(100);
+ 24e:	7c048493          	addi	s1,s1,1984 # 927c0 <lib_gpioctrl.c.e4f3fe8f+0x90657>
+ 252:	8526                	mv	a0,s1
+ 254:	35b1                	jal	a0 <DelaySysTick>
+ 256:	40011437          	lui	s0,0x40011
+ 25a:	08000793          	li	a5,128
+ 25e:	40040413          	addi	s0,s0,1024 # 40011400 <_eusrstack+0x20010c00>
+ 262:	c81c                	sw	a5,16(s0)
+		gpio_digital_write(GPIO_PD7, GPIO_HIGH);
+		Delay_Ms(100);
+ 264:	8526                	mv	a0,s1
+ 266:	3d2d                	jal	a0 <DelaySysTick>
+ 268:	008007b7          	lui	a5,0x800
+ 26c:	c81c                	sw	a5,16(s0)
+	while(1)
+ 26e:	b7d5                	j	252 <main+0x6a>
+
+00000270 <GPIO_PORT_MAP>:
+ 270:	0800 4001 0000 0000 1000 4001 1400 4001     ...@.......@...@
+
+00000280 <disp_pin>:
+ 280:	0502 0000 0602 0000 0702 0000 0203 0000     ................
+ 290:	0402 0000 0100 0000 0403 0000 0303 0000     ................
+ 2a0:	0200 0000 0003 0000 0002 0000 0102 0000     ................
+ 2b0:	0202 0000 0302 0000 0103 0000               ............
