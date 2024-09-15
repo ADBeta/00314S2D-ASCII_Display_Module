@@ -4,6 +4,11 @@
 	(generator_version "8.0")
 	(uuid "483a4603-2a2e-4a3f-86d2-881c4c42e091")
 	(paper "A4")
+	(title_block
+		(title "00314S2D-ASCII")
+		(date "2024-09-15")
+		(rev "MkI")
+	)
 	(lib_symbols
 		(symbol "14_Seg_2_Digit_Display:14_Seg_2_Digit_Display"
 			(exclude_from_sim no)
