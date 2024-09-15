@@ -6,8 +6,8 @@ It receives `115200 Baud` UART Data, in standard ASCII Format, then displays
 up to 2 Chars per Module. Any Additional chars will be transmitted down the 
 chain of displays.
 
-![PCB CAD](/images/pcb_cad_drawing.jpg)
-![PCB 3D](/images/pcb_cad_3d.jpg)
+![PCB CAD](/Images/pcb_cad_drawing.jpg?raw=true)
+![PCB 3D](/Images/pcb_cad_3d.jpg?raw=true)
 
 ## How to Use
 
