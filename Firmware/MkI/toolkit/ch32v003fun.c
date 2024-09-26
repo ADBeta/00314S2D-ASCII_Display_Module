@@ -1,9 +1,85 @@
 // Mixture of embedlibc, and ch32v00x_startup.c
-
-
-
 // Use with newlib headers.
 // Mixture of weblibc, mini-printf and ???
+/* This file contains the following functions:
+
+// libc (via musl) mixture and miniprintf
+
+int printf( const char* format, ... )
+int vprintf(const char* format, va_list args)
+int snprintf( char * buffer, unsigned int buffer_len, const char* format, ... )
+int sprintf( char * buffer, const char * format, ... )
+size_t wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict st)
+int wctomb(char *s, wchar_t wc)
+size_t strlen(const char *s)
+size_t strnlen(const char *s, size_t n)
+void *memset(void *dest, int c, size_t n)
+char *strcpy(char *d, const char *s)
+char *strncpy(char *d, const char *s, size_t n)
+int strcmp(const char *l, const char *r)
+int strncmp(const char *_l, const char *_r, size_t n)
+static char *twobyte_strstr(const unsigned char *h, const unsigned char *n)
+static char *threebyte_strstr(const unsigned char *h, const unsigned char *n)
+static char *fourbyte_strstr(const unsigned char *h, const unsigned char *n)
+static char *twoway_strstr(const unsigned char *h, const unsigned char *n)
+char *strstr(const char *h, const char *n)
+char *strchr(const char *s, int c)
+void *__memrchr(const void *m, int c, size_t n)
+char *strrchr(const char *s, int c)
+void *memcpy(void *dest, const void *src, size_t n)
+int memcmp(const void *vl, const void *vr, size_t n)
+void *memmove(void *dest, const void *src, size_t n)
+void *memchr(const void *src, int c, size_t n)
+int puts(const char *s)
+int mini_itoa(long value, unsigned int radix, int uppercase, int unsig,
+	 char *buffer)
+int mini_vsnprintf(char *buffer, unsigned int buffer_len, const char *fmt, va_list va)
+int mini_vpprintf(int (*puts)(char* s, int len, void* buf), void* buf, const char *fmt, va_list va)
+int mini_snprintf(char* buffer, unsigned int buffer_len, const char *fmt, ...)
+int mini_pprintf(int (*puts)(char*s, int len, void* buf), void* buf, const char *fmt, ...)
+
+// IRQ Handling Code
+void DefaultIRQHandler( void )
+void NMI_RCC_CSS_IRQHandler( void )
+
+// Startup Code
+void InterruptVectorDefault()
+void handle_reset()
+
+// Configuration-specific I/O
+
+#if defined( FUNCONF_USE_UARTPRINTF ) && FUNCONF_USE_UARTPRINTF
+void SetupUART( int uartBRR )
+int _write(int fd, const char *buf, int size)
+int putchar(int c)
+#endif
+
+#if defined( FUNCONF_USE_DEBUGPRINTF ) && FUNCONF_USE_DEBUGPRINTF
+void handle_debug_input( int numbytes, uint8_t * data ) // You can override this!
+void poll_input()
+int _write(int fd, const char *buf, int size)
+int putchar(int c)
+void SetupDebugPrintf()
+void WaitForDebuggerToAttach()
+#endif
+
+#if (defined( FUNCONF_USE_DEBUGPRINTF ) && !FUNCONF_USE_DEBUGPRINTF) && \
+    (defined( FUNCONF_USE_UARTPRINTF ) && !FUNCONF_USE_UARTPRINTF) && \
+    (defined( FUNCONF_NULL_PRINTF ) && FUNCONF_NULL_PRINTF)
+
+int _write(int fd, const char *buf, int size)
+int putchar(int c)
+#endif
+
+void DelaySysTick( uint32_t n )
+void SystemInit()
+
+#ifdef CPLUSPLUS
+extern void __cxa_pure_virtual()
+void __libc_init_array(void)
+#endif
+
+*/
 
 #include <stdio.h>
 #include <string.h>
@@ -12,18 +88,22 @@
 #include <stdint.h>
 #include <ch32v003fun.h>
 
-int errno;
+#define WEAK __attribute__((weak))
 
-int mini_vsnprintf(char *buffer, unsigned int buffer_len, const char *fmt, va_list va);
-int mini_vpprintf(int (*puts)(char* s, int len, void* buf), void* buf, const char *fmt, va_list va);
+WEAK int errno;
 
-static int __puts_uart(char *s, int len, void *buf)
+int mini_vsnprintf( char *buffer, unsigned int buffer_len, const char *fmt, va_list va );
+int mini_vpprintf( int (*puts)(char* s, int len, void* buf), void* buf, const char *fmt, va_list va );
+
+static int __puts_uart( char *s, int len, void *buf )
 {
+	(void)buf;
+
 	_write( 0, s, len );
 	return len;
 }
 
-int printf(const char* format, ...)
+WEAK int printf( const char* format, ... )
 {
 	va_list args;
 	va_start( args, format );
@@ -32,16 +112,25 @@ int printf(const char* format, ...)
 	return ret_status;
 }
 
-int vprintf(const char* format, va_list args)
+WEAK int vprintf(const char* format, va_list args)
 {
 	return mini_vpprintf(__puts_uart, 0, format, args);
 }
 
-int snprintf(char * buffer, unsigned int buffer_len, const char* format, ...)
+WEAK int snprintf( char * buffer, unsigned int buffer_len, const char* format, ... )
 {
 	va_list args;
 	va_start( args, format );
 	int ret = mini_vsnprintf( buffer, buffer_len, format, args );
+	va_end( args );
+	return ret;
+}
+
+WEAK int sprintf( char * buffer, const char * format, ... )
+{
+	va_list args;
+	va_start( args, format );
+	int ret = mini_vsnprintf( buffer, INT_MAX, format, args );
 	va_end( args );
 	return ret;
 }
@@ -86,7 +175,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 typedef void * mbstate_t;
 
 #ifdef UNICODE
-size_t wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict st)
+WEAK size_t wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict st)
 {
 	if (!s) return 1;
 	if ((unsigned)wc < 0x80) {
@@ -118,23 +207,23 @@ size_t wcrtomb(char *restrict s, wchar_t wc, mbstate_t *restrict st)
 	errno = 0x02;//EILSEQ;
 	return -1;
 }
-int wctomb(char *s, wchar_t wc)
+WEAK int wctomb(char *s, wchar_t wc)
 {
 	if (!s) return 0;
 	return wcrtomb(s, wc, 0);
 }
 #endif
-size_t strlen(const char *s) { const char *a = s;for (; *s; s++);return s-a; }
-size_t strnlen(const char *s, size_t n) { const char *p = memchr(s, 0, n); return p ? p-s : n;}
-void *memset(void *dest, int c, size_t n) { unsigned char *s = dest; for (; n; n--, s++) *s = c; return dest; }
-char *strcpy(char *d, const char *s) { for (; (*d=*s); s++, d++); return d; }
-char *strncpy(char *d, const char *s, size_t n) { for (; n && (*d=*s); n--, s++, d++); return d; }
-int strcmp(const char *l, const char *r)
+WEAK size_t strlen(const char *s) { const char *a = s;for (; *s; s++);return s-a; }
+WEAK size_t strnlen(const char *s, size_t n) { const char *p = memchr(s, 0, n); return p ? (size_t)(p-s) : n;}
+WEAK void *memset(void *dest, int c, size_t n) { unsigned char *s = dest; for (; n; n--, s++) *s = c; return dest; }
+WEAK char *strcpy(char *d, const char *s) { for (; (*d=*s); s++, d++); return d; }
+WEAK char *strncpy(char *d, const char *s, size_t n) { for (; n && (*d=*s); n--, s++, d++); return d; }
+WEAK int strcmp(const char *l, const char *r)
 {
 	for (; *l==*r && *l; l++, r++);
 	return *(unsigned char *)l - *(unsigned char *)r;
 }
-int strncmp(const char *_l, const char *_r, size_t n)
+WEAK int strncmp(const char *_l, const char *_r, size_t n)
 {
 	const unsigned char *l=(void *)_l, *r=(void *)_r;
 	if (!n--) return 0;
@@ -236,13 +325,13 @@ static char *twoway_strstr(const unsigned char *h, const unsigned char *n)
 	/* Search loop */
 	for (;;) {
 		/* Update incremental end-of-haystack pointer */
-		if (z-h < l) {
+		if ((size_t)(z-h) < l) {
 			/* Fast estimate for MAX(l,63) */
 			size_t grow = l | 63;
 			const unsigned char *z2 = memchr(z, 0, grow);
 			if (z2) {
 				z = z2;
-				if (z-h < l) return 0;
+				if ((size_t)(z-h) < l) return 0;
 			} else z += grow;
 		}
 
@@ -276,7 +365,15 @@ static char *twoway_strstr(const unsigned char *h, const unsigned char *n)
 	}
 }
 
-char *strstr(const char *h, const char *n)
+WEAK char *strchr(const char *s, int c)
+{
+	c = (unsigned char)c;
+	if (!c) return (char *)s + strlen(s);
+	for (; *s && *(unsigned char *)s != c; s++);
+	return (char *)s;
+}
+
+WEAK char *strstr(const char *h, const char *n)
 {
 	/* Return immediately on empty needle */
 	if (!n[0]) return (char *)h;
@@ -294,16 +391,8 @@ char *strstr(const char *h, const char *n)
 	return twoway_strstr((void *)h, (void *)n);
 }
 
-char *strchr(const char *s, int c)
-{
-	c = (unsigned char)c;
-	if (!c) return (char *)s + strlen(s);
-	for (; *s && *(unsigned char *)s != c; s++);
-	return (char *)s;
-}
 
-
-void *__memrchr(const void *m, int c, size_t n)
+WEAK void *__memrchr(const void *m, int c, size_t n)
 {
 	const unsigned char *s = m;
 	c = (unsigned char)c;
@@ -311,12 +400,12 @@ void *__memrchr(const void *m, int c, size_t n)
 	return 0;
 }
 
-char *strrchr(const char *s, int c)
+WEAK char *strrchr(const char *s, int c)
 {
 	return __memrchr(s, c, strlen(s) + 1);
 }
 
-void *memcpy(void *dest, const void *src, size_t n)
+WEAK void *memcpy(void *dest, const void *src, size_t n)
 {
 	unsigned char *d = dest;
 	const unsigned char *s = src;
@@ -324,7 +413,7 @@ void *memcpy(void *dest, const void *src, size_t n)
 	return dest;
 }
 
-int memcmp(const void *vl, const void *vr, size_t n)
+WEAK int memcmp(const void *vl, const void *vr, size_t n)
 {
 	const unsigned char *l=vl, *r=vr;
 	for (; n && *l == *r; n--, l++, r++);
@@ -332,7 +421,7 @@ int memcmp(const void *vl, const void *vr, size_t n)
 }
 
 
-void *memmove(void *dest, const void *src, size_t n)
+WEAK void *memmove(void *dest, const void *src, size_t n)
 {
 	char *d = dest;
 	const char *s = src;
@@ -348,7 +437,7 @@ void *memmove(void *dest, const void *src, size_t n)
 
 	return dest;
 }
-void *memchr(const void *src, int c, size_t n)
+WEAK void *memchr(const void *src, int c, size_t n)
 {
 	const unsigned char *s = src;
 	c = (unsigned char)c;
@@ -356,7 +445,7 @@ void *memchr(const void *src, int c, size_t n)
 	return n ? (void *)s : 0;
 }
 
-int puts(const char *s)
+WEAK int puts(const char *s)
 {
 	int sl = strlen( s );
 	_write(0, s, sl );
@@ -368,29 +457,9 @@ int puts(const char *s)
  * The Minimal snprintf() implementation
  *
  * Copyright (c) 2013,2014 Michal Ludvig <michal@logix.cz>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the auhor nor the names of its contributors
- *       may be used to endorse or promote products derived from this software
- *       without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
+ * Permission granted on 2024-07-13 for optional relicense under MIT license.
+ * https://github.com/mludvig/mini-printf/issues/16
  *
  * ----
  *
@@ -693,6 +762,9 @@ extern uint32_t * _edata;
 void DefaultIRQHandler( void )
 {
 	// Infinite Loop
+#if FUNCONF_DEBUG
+	printf( "DefaultIRQHandler MSTATUS:%08x MTVAL:%08x MCAUSE:%08x MEPC:%08x\n", (int)__get_MSTATUS(), (int)__get_MTVAL(), (int)__get_MCAUSE(), (int)__get_MEPC() );
+#endif
 	asm volatile( "1: j 1b" );
 }
 
@@ -787,21 +859,19 @@ void USART2_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"
 void USART3_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void EXTI15_10_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void RTCAlarm_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBWakeUp_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #endif
 #if defined(CH32V10x) || defined(CH32V20x)
-void USBWakeUp_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void USBHD_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #endif // defined(CH32V10x) || defined(CH32V20x)
-#if defined(CH32V20x)
+#if defined(CH32V20x) || defined(CH32V30x)
 void USBHDWakeUp_IRQHandler( void ) 	 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void ETH_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void ETHWakeUp_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-void TIM5_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void OSC32KCal_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void OSCWakeUp_IRQHandler( void ) 		 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-void UART4_IRQHandler( void ) 			 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void DMA1_Channel8_IRQHandler( void ) 	 __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
-#elif defined(CH32V30x)
+// This appears to be masked to USBHD
 void TIM8_BRK_IRQHandler( void ) 		__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void TIM8_UP_IRQHandler( void ) 		__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void TIM8_TRG_COM_IRQHandler( void ) 	__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
@@ -821,6 +891,9 @@ void DMA2_Channel3_IRQHandler( void ) 	__attribute__((section(".text.vector_hand
 void DMA2_Channel4_IRQHandler( void ) 	__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void DMA2_Channel5_IRQHandler( void ) 	__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void OTG_FS_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBHSWakeup_IRQHandler( void )		__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void USBHS_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
+void DVP_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void UART6_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void UART7_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 void UART8_IRQHandler( void ) 			__attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
@@ -859,10 +932,11 @@ void TIM2_BRK_IRQHandler( void )      __attribute__((section(".text.vector_handl
 void TIM3_IRQHandler( void )          __attribute__((section(".text.vector_handler"))) __attribute((weak,alias("DefaultIRQHandler"))) __attribute__((used));
 #endif
 
-#if defined( CH32V003 ) || defined( CH32X03x )
+void InterruptVector()         __attribute__((naked)) __attribute((section(".init"))) __attribute((weak,alias("InterruptVectorDefault"))) __attribute((naked));
+void InterruptVectorDefault()  __attribute__((naked)) __attribute((section(".init"))) __attribute((naked));
+void handle_reset( void ) __attribute__((section(".text.handle_reset")));
 
-void InterruptVector()         __attribute__((naked)) __attribute((section(".init"))) __attribute((weak,alias("InterruptVectorDefault")));
-void InterruptVectorDefault()  __attribute__((naked)) __attribute((section(".init")));
+#if defined( CH32V003 ) || defined( CH32X03x )
 
 void InterruptVectorDefault()
 {
@@ -870,29 +944,9 @@ void InterruptVectorDefault()
 	.align  2\n\
 	.option   push;\n\
 	.option   norvc;\n\
-	j handle_reset\n" );
-#if 0 // What is this for?  I don't see any reason to have it.
-#ifdef CH32X03x
-	asm volatile( "\n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00100073" );
-#endif
-#endif
-
+	j handle_reset\n"
 #if !defined(FUNCONF_TINYVECTOR) || !FUNCONF_TINYVECTOR
-	asm volatile( "\n\
-	.word   0\n\
+"	.word   0\n\
 	.word   NMI_Handler               /* NMI Handler */                    \n\
 	.word   HardFault_Handler         /* Hard Fault Handler */             \n\
 	.word   0\n"
@@ -958,8 +1012,8 @@ void InterruptVectorDefault()
 	.word	TIM2_BRK_IRQHandler       /* Timer 2 Brk Global Interrupt             */ \n\
 	.word	TIM3_IRQHandler           /* Timer 3 Global Interrupt                 */"
 #endif
-	);
 #endif
+	);
 	asm volatile( ".option   pop;\n");
 }
 
@@ -1037,39 +1091,12 @@ asm volatile(
 
 #elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
-void Init() 				   __attribute((section(".init"))) __attribute((used));
-void InterruptVector()         __attribute__((naked)) __attribute((section(".vector"))) __attribute((weak,alias("InterruptVectorDefault")));
-void InterruptVectorDefault()  __attribute__((naked)) __attribute((section(".vector")));
-
-void handle_reset( void ) __attribute__((section(".text.handle_reset")));
-
-void Init()
-{
-	asm volatile( "\n\
-	.align	1 \n\
-_start: \n\
-	j handle_reset \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00000013 \n\
-	.word 0x00100073 \n" );
-}
-
 void InterruptVectorDefault()
 {
 	asm volatile( "\n\
 	.align	1 \n\
 	.option norvc; \n\
-	.word   Init \n"
+	j handle_reset \n"
 #if !defined(FUNCONF_TINYVECTOR) || !FUNCONF_TINYVECTOR
 "	.word   0 \n\
 	.word   NMI_Handler                /* NMI */ \n\
@@ -1092,122 +1119,120 @@ void InterruptVectorDefault()
 	.word   0 \n\
 	.word   0 \n"
 #endif
-"	.word   SysTick_Handler            /* SysTick */ \n\
+"	.word   SysTick_Handler            /* SysTick = 12 */ \n\
 	.word   0 \n\
-	.word   SW_Handler                 /* SW */ \n\
+	.word   SW_Handler                 /* SW = 14 */ \n\
 	.word   0 \n\
 	/* External Interrupts */ \n\
-	.word   WWDG_IRQHandler            /* Window Watchdog */ \n\
-	.word   PVD_IRQHandler             /* PVD through EXTI Line detect */ \n\
-	.word   TAMPER_IRQHandler          /* TAMPER */ \n\
-	.word   RTC_IRQHandler             /* RTC */ \n\
-	.word   FLASH_IRQHandler           /* Flash */ \n\
-	.word   RCC_IRQHandler             /* RCC */ \n\
-	.word   EXTI0_IRQHandler           /* EXTI Line 0 */ \n\
-	.word   EXTI1_IRQHandler           /* EXTI Line 1 */ \n\
-	.word   EXTI2_IRQHandler           /* EXTI Line 2 */ \n\
-	.word   EXTI3_IRQHandler           /* EXTI Line 3 */ \n\
-	.word   EXTI4_IRQHandler           /* EXTI Line 4 */ \n\
-	.word   DMA1_Channel1_IRQHandler   /* DMA1 Channel 1 */ \n\
-	.word   DMA1_Channel2_IRQHandler   /* DMA1 Channel 2 */ \n\
-	.word   DMA1_Channel3_IRQHandler   /* DMA1 Channel 3 */ \n\
-	.word   DMA1_Channel4_IRQHandler   /* DMA1 Channel 4 */ \n\
-	.word   DMA1_Channel5_IRQHandler   /* DMA1 Channel 5 */ \n\
-	.word   DMA1_Channel6_IRQHandler   /* DMA1 Channel 6 */ \n\
-	.word   DMA1_Channel7_IRQHandler   /* DMA1 Channel 7 */ \n\
-	.word   ADC1_2_IRQHandler          /* ADC1_2 */ \n"
-#if !defined(CH32V10x)
-"	.word   USB_HP_CAN1_TX_IRQHandler  /* USB HP and CAN1 TX */ \n\
-	.word   USB_LP_CAN1_RX0_IRQHandler /* USB LP and CAN1RX0 */ \n\
-	.word   CAN1_RX1_IRQHandler        /* CAN1 RX1 */ \n\
-	.word   CAN1_SCE_IRQHandler        /* CAN1 SCE */ \n"
+	.word   WWDG_IRQHandler            /* 16: Window Watchdog */ \n\
+	.word   PVD_IRQHandler             /* 17: PVD through EXTI Line detect */ \n\
+	.word   TAMPER_IRQHandler          /* 18: TAMPER */ \n\
+	.word   RTC_IRQHandler             /* 19: RTC */ \n\
+	.word   FLASH_IRQHandler           /* 20: Flash */ \n\
+	.word   RCC_IRQHandler             /* 21: RCC */ \n\
+	.word   EXTI0_IRQHandler           /* 22: EXTI Line 0 */ \n\
+	.word   EXTI1_IRQHandler           /* 23: EXTI Line 1 */ \n\
+	.word   EXTI2_IRQHandler           /* 24: EXTI Line 2 */ \n\
+	.word   EXTI3_IRQHandler           /* 25: EXTI Line 3 */ \n\
+	.word   EXTI4_IRQHandler           /* 26: EXTI Line 4 */ \n\
+	.word   DMA1_Channel1_IRQHandler   /* 27: DMA1 Channel 1 */ \n\
+	.word   DMA1_Channel2_IRQHandler   /* 28: DMA1 Channel 2 */ \n\
+	.word   DMA1_Channel3_IRQHandler   /* 29: DMA1 Channel 3 */ \n\
+	.word   DMA1_Channel4_IRQHandler   /* 30: DMA1 Channel 4 */ \n\
+	.word   DMA1_Channel5_IRQHandler   /* 31: DMA1 Channel 5 */ \n\
+	.word   DMA1_Channel6_IRQHandler   /* 32: DMA1 Channel 6 */ \n\
+	.word   DMA1_Channel7_IRQHandler   /* 33: DMA1 Channel 7 */ \n\
+	.word   ADC1_2_IRQHandler          /* 34: ADC1_2 */ \n"
+#if defined(CH32V20x) || defined(CH32V30x)
+"	.word   USB_HP_CAN1_TX_IRQHandler  /* 35: USB HP and CAN1 TX */ \n\
+	.word   USB_LP_CAN1_RX0_IRQHandler /* 36: USB LP and CAN1RX0 */ \n\
+	.word   CAN1_RX1_IRQHandler        /* 37: CAN1 RX1 */ \n\
+	.word   CAN1_SCE_IRQHandler        /* 38: CAN1 SCE */ \n"
 #else
 "	.word   0 \n\
 	.word   0 \n\
 	.word   0 \n\
 	.word   0 \n"
 #endif
-"	.word   EXTI9_5_IRQHandler         /* EXTI Line 9..5 */ \n\
-	.word   TIM1_BRK_IRQHandler        /* TIM1 Break */ \n\
-	.word   TIM1_UP_IRQHandler         /* TIM1 Update */ \n\
-	.word   TIM1_TRG_COM_IRQHandler    /* TIM1 Trigger and Commutation */ \n\
-	.word   TIM1_CC_IRQHandler         /* TIM1 Capture Compare */ \n\
-	.word   TIM2_IRQHandler            /* TIM2 */ \n\
-	.word   TIM3_IRQHandler            /* TIM3 */ \n\
-	.word   TIM4_IRQHandler            /* TIM4 */ \n\
-	.word   I2C1_EV_IRQHandler         /* I2C1 Event */ \n\
-	.word   I2C1_ER_IRQHandler         /* I2C1 Error */ \n\
-	.word   I2C2_EV_IRQHandler         /* I2C2 Event */ \n\
-	.word   I2C2_ER_IRQHandler         /* I2C2 Error */ \n\
-	.word   SPI1_IRQHandler            /* SPI1 */ \n\
-	.word   SPI2_IRQHandler            /* SPI2 */ \n\
-	.word   USART1_IRQHandler          /* USART1 */ \n\
-	.word   USART2_IRQHandler          /* USART2 */ \n\
-	.word   USART3_IRQHandler          /* USART3 */ \n\
-	.word   EXTI15_10_IRQHandler       /* EXTI Line 15..10 */ \n\
-	.word   RTCAlarm_IRQHandler        /* RTC Alarm through EXTI Line */ \n"
-#if defined(CH32V10x) || defined(CH32V20x)
-"	.word   USBWakeUp_IRQHandler       /* USB Wake up from suspend */ \n\
-	.word   USBHD_IRQHandler           /* USBHD Break */ \n"
+"	.word   EXTI9_5_IRQHandler         /* 39: EXTI Line 9..5 */ \n\
+	.word   TIM1_BRK_IRQHandler        /* 40: TIM1 Break */ \n\
+	.word   TIM1_UP_IRQHandler         /* 41: TIM1 Update */ \n\
+	.word   TIM1_TRG_COM_IRQHandler    /* 42: TIM1 Trigger and Commutation */ \n\
+	.word   TIM1_CC_IRQHandler         /* 43: TIM1 Capture Compare */ \n\
+	.word   TIM2_IRQHandler            /* 44: TIM2 */ \n\
+	.word   TIM3_IRQHandler            /* 45: TIM3 */ \n\
+	.word   TIM4_IRQHandler            /* 46: TIM4 */ \n\
+	.word   I2C1_EV_IRQHandler         /* 47: I2C1 Event */ \n\
+	.word   I2C1_ER_IRQHandler         /* 48: I2C1 Error */ \n\
+	.word   I2C2_EV_IRQHandler         /* 49: I2C2 Event */ \n\
+	.word   I2C2_ER_IRQHandler         /* 50: I2C2 Error */ \n\
+	.word   SPI1_IRQHandler            /* 51: SPI1 */ \n\
+	.word   SPI2_IRQHandler            /* 52: SPI2 */ \n\
+	.word   USART1_IRQHandler          /* 53: USART1 */ \n\
+	.word   USART2_IRQHandler          /* 54: USART2 */ \n\
+	.word   USART3_IRQHandler          /* 55: USART3 */ \n\
+	.word   EXTI15_10_IRQHandler       /* 56: EXTI Line 15..10 */ \n\
+	.word   RTCAlarm_IRQHandler        /* 57: RTC Alarm through EXTI Line */ \n"
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
+"	.word   USBWakeUp_IRQHandler       /* 58: USB Wake up from suspend */ \n"
+#if defined(CH32V20x) || defined(CH32V30x)
+
+#if defined(CH32V30x)
+"   .word   TIM8_BRK_IRQHandler        /* 59: TIM8 Break == masked to USBHD? */ \n"
+#else
+"	.word   USBHD_IRQHandler           /* 59: USBHD Break */ \n"
 #endif
-#if defined(CH32V20x)
-"	.word   USBHDWakeUp_IRQHandler     /* USBHD Wake up from suspend */ \n\
-	.word   ETH_IRQHandler             /* ETH global */ \n\
-	.word   ETHWakeUp_IRQHandler       /* ETH Wake up */ \n\
-	.word   0                          /* BLE BB */ \n\
-	.word   0                          /* BLE LLE */ \n\
-	.word   TIM5_IRQHandler            /* TIM5 */ \n\
-	.word   UART4_IRQHandler           /* UART4 */ \n\
-	.word   DMA1_Channel8_IRQHandler   /* DMA1 Channel8 */ \n\
-	.word   OSC32KCal_IRQHandler       /* OSC32KCal */ \n\
-	.word   OSCWakeUp_IRQHandler       /* OSC Wake Up */ \n"
-#elif defined(CH32V30x)
-"	.word   0 \n\
-    .word   TIM8_BRK_IRQHandler        /* TIM8 Break */ \n\
-    .word   TIM8_UP_IRQHandler         /* TIM8 Update */ \n\
-    .word   TIM8_TRG_COM_IRQHandler    /* TIM8 Trigger and Commutation */ \n\
-    .word   TIM8_CC_IRQHandler         /* TIM8 Capture Compare */ \n\
-    .word   RNG_IRQHandler             /* RNG */ \n\
-    .word   FSMC_IRQHandler            /* FSMC */ \n\
-    .word   SDIO_IRQHandler            /* SDIO */ \n\
-    .word   TIM5_IRQHandler            /* TIM5 */ \n\
-    .word   SPI3_IRQHandler            /* SPI3 */ \n\
-    .word   UART4_IRQHandler           /* UART4 */ \n\
-    .word   UART5_IRQHandler           /* UART5 */ \n\
-    .word   TIM6_IRQHandler            /* TIM6 */ \n\
-    .word   TIM7_IRQHandler            /* TIM7 */ \n\
-    .word   DMA2_Channel1_IRQHandler   /* DMA2 Channel 1 */ \n\
-    .word   DMA2_Channel2_IRQHandler   /* DMA2 Channel 2 */ \n\
-    .word   DMA2_Channel3_IRQHandler   /* DMA2 Channel 3 */ \n\
-    .word   DMA2_Channel4_IRQHandler   /* DMA2 Channel 4 */ \n\
-    .word   DMA2_Channel5_IRQHandler   /* DMA2 Channel 5 */ \n\
-    .word   0 \n\
-    .word   0 \n\
-    .word   0 \n\
-    .word   0 \n\
-    .word   0 \n\
-    .word   0 \n\
-    .word   OTG_FS_IRQHandler          /* OTGFS */ \n\
-    .word   0 \n\
-    .word   0 \n\
-    .word   0 \n\
-    .word   UART6_IRQHandler           /* UART6 */ \n\
-    .word   UART7_IRQHandler           /* UART7 */ \n\
-    .word   UART8_IRQHandler           /* UART8 */ \n\
-    .word   TIM9_BRK_IRQHandler        /* TIM9 Break */ \n\
-    .word   TIM9_UP_IRQHandler         /* TIM9 Update */ \n\
-    .word   TIM9_TRG_COM_IRQHandler    /* TIM9 Trigger and Commutation */ \n\
-    .word   TIM9_CC_IRQHandler         /* TIM9 Capture Compare */ \n\
-    .word   TIM10_BRK_IRQHandler       /* TIM10 Break */ \n\
-    .word   TIM10_UP_IRQHandler        /* TIM10 Update */ \n\
-    .word   TIM10_TRG_COM_IRQHandler   /* TIM10 Trigger and Commutation */ \n\
-    .word   TIM10_CC_IRQHandler        /* TIM10 Capture Compare */ \n\
-    .word   DMA2_Channel6_IRQHandler   /* DMA2 Channel 6 */ \n\
-    .word   DMA2_Channel7_IRQHandler   /* DMA2 Channel 7 */ \n\
-    .word   DMA2_Channel8_IRQHandler   /* DMA2 Channel 8 */ \n\
-    .word   DMA2_Channel9_IRQHandler   /* DMA2 Channel 9 */ \n\
-    .word   DMA2_Channel10_IRQHandler  /* DMA2 Channel 10 */ \n\
-    .word   DMA2_Channel11_IRQHandler  /* DMA2 Channel 11 */ \n"
+"   .word   TIM8_UP_IRQHandler         /* 60: TIM8 Update */ \n\
+    .word   TIM8_TRG_COM_IRQHandler    /* 61: TIM8 Trigger and Commutation */ \n\
+    .word   TIM8_CC_IRQHandler         /* 62: TIM8 Capture Compare */ \n\
+    .word   RNG_IRQHandler             /* 63: RNG */ \n\
+    .word   FSMC_IRQHandler            /* 64: FSMC */ \n\
+    .word   SDIO_IRQHandler            /* 65: SDIO */ \n\
+    .word   TIM5_IRQHandler            /* 66: TIM5 */ \n\
+    .word   SPI3_IRQHandler            /* 67: SPI3 */ \n\
+    .word   UART4_IRQHandler           /* 68: UART4 */ \n\
+    .word   UART5_IRQHandler           /* 59: UART5 */ \n\
+    .word   TIM6_IRQHandler            /* 70: TIM6 */ \n\
+    .word   TIM7_IRQHandler            /* 71: TIM7 */ \n\
+    .word   DMA2_Channel1_IRQHandler   /* 72: DMA2 Channel 1 */ \n\
+    .word   DMA2_Channel2_IRQHandler   /* 73: DMA2 Channel 2 */ \n\
+    .word   DMA2_Channel3_IRQHandler   /* 74: DMA2 Channel 3 */ \n\
+    .word   DMA2_Channel4_IRQHandler   /* 75: DMA2 Channel 4 */ \n\
+    .word   DMA2_Channel5_IRQHandler   /* 76: DMA2 Channel 5 */ \n\
+	.word   ETH_IRQHandler             /* 77: ETH global */ \n\
+	.word   ETHWakeUp_IRQHandler       /* 78: ETH Wake up */ \n\
+    .word   0                          /* 79: CAN2_TX */ \n\
+    .word   0                          /* 80: CAN2_RX0 */ \n\
+    .word   0                          /* 81: CAN2_RX1 */ \n\
+    .word   0                          /* 82: CAN2_SCE */ \n\
+    .word   OTG_FS_IRQHandler          /* 83: OTGFS */ \n"
+#if defined(CH32V30x)
+"   .word   USBHSWakeup_IRQHandler     /* 84: USBHsWakeUp */ \n\
+    .word   USBHS_IRQHandler           /* 85: USBHS */ \n\
+    .word   DVP_IRQHandler             /* 86: DVP */ \n"
+#else
+"   .word   0                          /* 84: USBHsWakeUp */ \n\
+    .word   0                          /* 85: USBHS */ \n\
+    .word   0                          /* 86: DVP */ \n"
+#endif
+"   .word   UART6_IRQHandler           /* 87: UART6 */ \n\
+    .word   UART7_IRQHandler           /* 88: UART7 */ \n\
+    .word   UART8_IRQHandler           /* 89: UART8 */ \n\
+    .word   TIM9_BRK_IRQHandler        /* 90: TIM9 Break */ \n\
+    .word   TIM9_UP_IRQHandler         /* 91: TIM9 Update */ \n\
+    .word   TIM9_TRG_COM_IRQHandler    /* 92: TIM9 Trigger and Commutation */ \n\
+    .word   TIM9_CC_IRQHandler         /* 93: TIM9 Capture Compare */ \n\
+    .word   TIM10_BRK_IRQHandler       /* 94: TIM10 Break */ \n\
+    .word   TIM10_UP_IRQHandler        /* 95: TIM10 Update */ \n\
+    .word   TIM10_TRG_COM_IRQHandler   /* 96: TIM10 Trigger and Commutation */ \n\
+    .word   TIM10_CC_IRQHandler        /* 97: TIM10 Capture Compare */ \n\
+    .word   DMA2_Channel6_IRQHandler   /* 98: DMA2 Channel 6 */ \n\
+    .word   DMA2_Channel7_IRQHandler   /* 99: DMA2 Channel 7 */ \n\
+    .word   DMA2_Channel8_IRQHandler   /* 100: DMA2 Channel 8 */ \n\
+    .word   DMA2_Channel9_IRQHandler   /* 101: DMA2 Channel 9 */ \n\
+    .word   DMA2_Channel10_IRQHandler  /* 102: DMA2 Channel 10 */ \n\
+    .word   DMA2_Channel11_IRQHandler  /* 103: DMA2 Channel 11 */ \n"
+#endif
 #endif
 
 #endif // !defined(FUNCONF_TINYVECTOR) || !FUNCONF_TINYVECTOR
@@ -1264,21 +1289,17 @@ void handle_reset( void )
 "	li t0, 0x1f\n\
 	csrw 0xbc0, t0\n"
 
-//XXX TODO: CHECKME - TEST ON 203!!!
-#if FUNCONF_ENABLE_HPE	// Enabled nested and hardware (HPE) stack, since it's really good on the x035.
+#if defined(CH32V30x) && !defined( DISABLED_FLOAT )
+"	li t0, 0x6088\n\
+	csrs mstatus, t0\n"
+#else
 "	li t0, 0x88\n\
 	csrs mstatus, t0\n"
-"	li t0, 0x0b\n\
-	csrw 0x804, t0\n"
-#else
-"	li a0, 0x80\n\
-	csrw mstatus, a0\n"
 #endif
 
-#if defined(CH32V30x)
-	// Enable floating point and interrupt
-"	li t0, 0x688\n\
-	csrs mstatus, t0\n"
+#if FUNCONF_ENABLE_HPE	// Enabled nested and hardware (HPE) stack, since it's really good on the x035.
+"	li t0, 0x0b\n\
+	csrw 0x804, t0\n"
 #endif
 "	la t0, InterruptVector\n\
 	ori t0, t0, 3\n\
@@ -1334,7 +1355,7 @@ void SetupUART( int uartBRR )
 }
 
 // For debug writing to the UART.
-int _write(int fd, const char *buf, int size)
+WEAK int _write(int fd, const char *buf, int size)
 {
 	for(int i = 0; i < size; i++){
 	    while( !(USART1->STATR & USART_FLAG_TC));
@@ -1344,7 +1365,7 @@ int _write(int fd, const char *buf, int size)
 }
 
 // single char to UART
-int putchar(int c)
+WEAK int putchar(int c)
 {
 	while( !(USART1->STATR & USART_FLAG_TC));
 	USART1->DATAR = (const char)c;
@@ -1356,7 +1377,7 @@ int putchar(int c)
 
 
 void handle_debug_input( int numbytes, uint8_t * data ) __attribute__((weak));
-void handle_debug_input( int numbytes, uint8_t * data ) { }
+void handle_debug_input( int numbytes, uint8_t * data ) { (void)numbytes; (void)data; }
 
 static void internal_handle_input( volatile uint32_t * dmdata0 )
 {
@@ -1387,9 +1408,11 @@ void poll_input()
 //   b7 = is a "printf" waiting?
 //   b0..b3 = # of bytes in printf (+4).  (5 or higher indicates a print of some kind)
 //     note: if b7 is 0 in reply, but b0..b3 have >=4 then we received data from host.
-
-int _write(int fd, const char *buf, int size)
+// declare as weak to allow overriding.
+WEAK int _write(int fd, const char *buf, int size)
 {
+	(void)fd;
+
 	char buffer[4] = { 0 };
 	int place = 0;
 	uint32_t lastdmd;
@@ -1435,7 +1458,7 @@ int _write(int fd, const char *buf, int size)
 }
 
 // single to debug intf
-int putchar(int c)
+WEAK int putchar(int c)
 {
 	int timeout = FUNCONF_DEBUGPRINTF_TIMEOUT;
 	uint32_t lastdmd = 0;
@@ -1467,13 +1490,13 @@ void WaitForDebuggerToAttach()
     (defined( FUNCONF_USE_UARTPRINTF ) && !FUNCONF_USE_UARTPRINTF) && \
     (defined( FUNCONF_NULL_PRINTF ) && FUNCONF_NULL_PRINTF)
 
-int _write(int fd, const char *buf, int size)
+WEAK int _write(int fd, const char *buf, int size)
 {
 	return size;
 }
 
 // single to debug intf
-int putchar(int c)
+WEAK int putchar(int c)
 {
 	return 1;
 }
@@ -1497,6 +1520,10 @@ void DelaySysTick( uint32_t n )
 
 void SystemInit()
 {
+#if defined(CH32V30x) && defined(TARGET_MCU_MEMORY_SPLIT)
+	FLASH->OBR = TARGET_MCU_MEMORY_SPLIT<<8;
+#endif
+
 #if FUNCONF_HSE_BYPASS
 	#define HSEBYP (1<<18)
 #else

@@ -1,4 +1,5 @@
-// This contains a copy of ch32v00x.h and core_riscv.h ch32v00x_conf.h and other misc functions  See copyright notice at end.
+/* SPDX-License-Identifier: MIT */
+// This contains a copy of ch32v00x.h and core_riscv.h ch32v00x_conf.h and other misc functions See copyright explanation at the end of the file.
 
 #ifndef __CH32V00x_H
 #define __CH32V00x_H
@@ -27,19 +28,29 @@
 	5. printf
 		printf, _write may be semihosted, or printed to UART.
 
-		poll_input, handle_debug_input may be used with semihsoting.
+		poll_input, handle_debug_input may be used with semihsoting to accept input from host.
 
-	For UART printf, on:
-		CH32V003, Port D5, 115200 8n1
-		CH32V203, Port A9, 115200 8n1
+		For UART printf, on:
+			CH32V003, Port D5, 115200 8n1
+			CH32V203, Port A9, 115200 8n1
 
-	Modifications can be made to SetupUart, or your own version as desired.
+		Modifications can be made to SetupUart, or your own version as desired.
+
+    6. ISR Control Routines
+		__enable_irq();    // For global interrupt enable
+		__disable_irq();   // For global interrupt disable
+		__isenabled_irq(); // For seeing if interrupts are enabled.
+		NVIC_EnableIRQ(IRQn_Type IRQn) // To enable a specific interrupt
+
+	7. Hardware MMIO structs, i.e.
+		SysTick->CNT = current system tick counter (can be Hclk or Hclk/8)
+		TIM2->CH1CVR = direct control over a PWM output
 */
 
 
 
-/*****************************************************************************
-	CH32V003 Fun Configs:
+/******************************************************************************
+ * CH32V003 Fun Configs; please define any non-default options in funconfig.h *
 
 #define FUNCONF_USE_PLL 1               // Use built-in 2x PLL 
 #define FUNCONF_USE_HSI 1               // Use HSI Internal Oscillator
@@ -57,6 +68,7 @@
 #define FUNCONF_DEBUGPRINTF_TIMEOUT 160000 // Arbitrary time units
 #define FUNCONF_ENABLE_HPE 1            // Enable hardware interrupt stack.  Very good on QingKeV4, i.e. x035, v10x, v20x, v30x, but questionable on 003.
 #define FUNCONF_USE_5V_VDD 0            // Enable this if you plan to use your part at 5V - affects USB and PD configration on the x035.
+#define FUNCONF_DEBUG      0            // Log fatal errors with "printf"
 */
 
 // Sanity check for when porting old code.
@@ -97,6 +109,10 @@
 	#else
 		#define FUNCONF_USE_PLL 1 // Default to use PLL
 	#endif
+#endif
+
+#if !defined( FUNCONF_DEBUG )
+	#define FUNCONF_DEBUG 0
 #endif
 
 #if defined( CH32X03x ) && FUNCONF_USE_PLL
@@ -209,6 +225,7 @@
 
 #ifndef __ASSEMBLER__  // Things before this can be used in assembly.
 
+#include <stdint.h>
 
 #ifdef __cplusplus
   #define     __I     volatile                /*!< defines 'read only' permissions      */
@@ -362,99 +379,109 @@ typedef enum IRQn
 #elif defined(CH32V30x)
 
 #ifdef CH32V30x_D8
-  TIM8_BRK_IRQn               = 59,      /* TIM8 Break Interrupt                                 */
-  TIM8_UP_IRQn                = 60,      /* TIM8 Update Interrupt                                */
-  TIM8_TRG_COM_IRQn           = 61,      /* TIM8 Trigger and Commutation Interrupt               */
-  TIM8_CC_IRQn                = 62,      /* TIM8 Capture Compare Interrupt                       */
-  RNG_IRQn                    = 63,      /* RNG global Interrupt                                 */
-  FSMC_IRQn                   = 64,      /* FSMC global Interrupt                                */
-  SDIO_IRQn                   = 65,      /* SDIO global Interrupt                                */
-  TIM5_IRQn                   = 66,      /* TIM5 global Interrupt                                */
-  SPI3_IRQn                   = 67,      /* SPI3 global Interrupt                                */
-  UART4_IRQn                  = 68,      /* UART4 global Interrupt                               */
-  UART5_IRQn                  = 69,      /* UART5 global Interrupt                               */
-  TIM6_IRQn                   = 70,      /* TIM6 global Interrupt                                */
-  TIM7_IRQn                   = 71,      /* TIM7 global Interrupt                                */
-  DMA2_Channel1_IRQn          = 72,      /* DMA2 Channel 1 global Interrupt                      */
-  DMA2_Channel2_IRQn          = 73,      /* DMA2 Channel 2 global Interrupt                      */
-  DMA2_Channel3_IRQn          = 74,      /* DMA2 Channel 3 global Interrupt                      */
-  DMA2_Channel4_IRQn          = 75,      /* DMA2 Channel 4 global Interrupt                      */
-  DMA2_Channel5_IRQn          = 76,      /* DMA2 Channel 5 global Interrupt                      */
-  OTG_FS_IRQn                 = 83,      /* OTGFS global Interrupt                               */
-  UART6_IRQn                  = 87,      /* UART6 global Interrupt                               */
-  UART7_IRQn                  = 88,      /* UART7 global Interrupt                               */
-  UART8_IRQn                  = 89,      /* UART8 global Interrupt                               */
-  TIM9_BRK_IRQn               = 90,      /* TIM9 Break Interrupt                                 */
-  TIM9_UP_IRQn                = 91,      /* TIM9 Update Interrupt                                */
-  TIM9_TRG_COM_IRQn           = 92,      /* TIM9 Trigger and Commutation Interrupt               */
-  TIM9_CC_IRQn                = 93,      /* TIM9 Capture Compare Interrupt                       */
-  TIM10_BRK_IRQn              = 94,      /* TIM10 Break Interrupt                                */
-  TIM10_UP_IRQn               = 95,      /* TIM10 Update Interrupt                               */
-  TIM10_TRG_COM_IRQn          = 96,      /* TIM10 Trigger and Commutation Interrupt              */
-  TIM10_CC_IRQn               = 97,      /* TIM10 Capture Compare Interrupt                      */
-  DMA2_Channel6_IRQn          = 98,      /* DMA2 Channel 6 global Interrupt                      */
-  DMA2_Channel7_IRQn          = 99,      /* DMA2 Channel 7 global Interrupt                      */
-  DMA2_Channel8_IRQn          = 100,     /* DMA2 Channel 8 global Interrupt                      */
-  DMA2_Channel9_IRQn          = 101,     /* DMA2 Channel 9 global Interrupt                      */
-  DMA2_Channel10_IRQn         = 102,     /* DMA2 Channel 10 global Interrupt                     */
-  DMA2_Channel11_IRQn         = 103,     /* DMA2 Channel 11 global Interrupt                     */
-
+	TIM8_BRK_IRQn               = 59,      /* TIM8 Break Interrupt                                 */
 #elif defined  (CH32V30x_D8C)
-  USBWakeUp_IRQn              = 58,      /* USB Device WakeUp from suspend through EXTI Line Interrupt */
-  TIM8_BRK_IRQn               = 59,      /* TIM8 Break Interrupt                                 */
-  TIM8_UP_IRQn                = 60,      /* TIM8 Update Interrupt                                */
-  TIM8_TRG_COM_IRQn           = 61,      /* TIM8 Trigger and Commutation Interrupt               */
-  TIM8_CC_IRQn                = 62,      /* TIM8 Capture Compare Interrupt                       */
-  RNG_IRQn                    = 63,      /* RNG global Interrupt                                 */
-  FSMC_IRQn                   = 64,      /* FSMC global Interrupt                                */
-  SDIO_IRQn                   = 65,      /* SDIO global Interrupt                                */
-  TIM5_IRQn                   = 66,      /* TIM5 global Interrupt                                */
-  SPI3_IRQn                   = 67,      /* SPI3 global Interrupt                                */
-  UART4_IRQn                  = 68,      /* UART4 global Interrupt                               */
-  UART5_IRQn                  = 69,      /* UART5 global Interrupt                               */
-  TIM6_IRQn                   = 70,      /* TIM6 global Interrupt                                */
-  TIM7_IRQn                   = 71,      /* TIM7 global Interrupt                                */
-  DMA2_Channel1_IRQn          = 72,      /* DMA2 Channel 1 global Interrupt                      */
-  DMA2_Channel2_IRQn          = 73,      /* DMA2 Channel 2 global Interrupt                      */
-  DMA2_Channel3_IRQn          = 74,      /* DMA2 Channel 3 global Interrupt                      */
-  DMA2_Channel4_IRQn          = 75,      /* DMA2 Channel 4 global Interrupt                      */
-  DMA2_Channel5_IRQn          = 76,      /* DMA2 Channel 5 global Interrupt                      */
-  ETH_IRQn                    = 77,      /* ETH global Interrupt                                 */
-  ETH_WKUP_IRQn               = 78,      /* ETH WakeUp Interrupt                                 */
-  CAN2_TX_IRQn                = 79,      /* CAN2 TX Interrupts                                   */
-  CAN2_RX0_IRQn               = 80,      /* CAN2 RX0 Interrupts                                  */
-  CAN2_RX1_IRQn               = 81,      /* CAN2 RX1 Interrupt                                   */
-  CAN2_SCE_IRQn               = 82,      /* CAN2 SCE Interrupt                                   */
-  OTG_FS_IRQn                 = 83,      /* OTGFS global Interrupt                               */
-  USBHSWakeup_IRQn            = 84,      /* USBHS WakeUp Interrupt                               */
-  USBHS_IRQn                  = 85,      /* USBHS global Interrupt                               */
-  DVP_IRQn                    = 86,      /* DVP global Interrupt                                 */
-  UART6_IRQn                  = 87,      /* UART6 global Interrupt                               */
-  UART7_IRQn                  = 88,      /* UART7 global Interrupt                               */
-  UART8_IRQn                  = 89,      /* UART8 global Interrupt                               */
-  TIM9_BRK_IRQn               = 90,      /* TIM9 Break Interrupt                                 */
-  TIM9_UP_IRQn                = 91,      /* TIM9 Update Interrupt                                */
-  TIM9_TRG_COM_IRQn           = 92,      /* TIM9 Trigger and Commutation Interrupt               */
-  TIM9_CC_IRQn                = 93,      /* TIM9 Capture Compare Interrupt                       */
-  TIM10_BRK_IRQn              = 94,      /* TIM10 Break Interrupt                                */
-  TIM10_UP_IRQn               = 95,      /* TIM10 Update Interrupt                               */
-  TIM10_TRG_COM_IRQn          = 96,      /* TIM10 Trigger and Commutation Interrupt              */
-  TIM10_CC_IRQn               = 97,      /* TIM10 Capture Compare Interrupt                      */
-  DMA2_Channel6_IRQn          = 98,      /* DMA2 Channel 6 global Interrupt                      */
-  DMA2_Channel7_IRQn          = 99,      /* DMA2 Channel 7 global Interrupt                      */
-  DMA2_Channel8_IRQn          = 100,     /* DMA2 Channel 8 global Interrupt                      */
-  DMA2_Channel9_IRQn          = 101,     /* DMA2 Channel 9 global Interrupt                      */
-  DMA2_Channel10_IRQn         = 102,     /* DMA2 Channel 10 global Interrupt                     */
-  DMA2_Channel11_IRQn         = 103,     /* DMA2 Channel 11 global Interrupt                     */
-
+	USBWakeUp_IRQn              = 58,      /* USB Device WakeUp from suspend through EXTI Line Interrupt */
+	TIM8_BRK_IRQn               = 59,      /* TIM8 Break Interrupt                                 */
+#endif
+	TIM8_UP_IRQn                = 60,      /* TIM8 Update Interrupt                                */
+	TIM8_TRG_COM_IRQn           = 61,      /* TIM8 Trigger and Commutation Interrupt               */
+	TIM8_CC_IRQn                = 62,      /* TIM8 Capture Compare Interrupt                       */
+	RNG_IRQn                    = 63,      /* RNG global Interrupt                                 */
+	FSMC_IRQn                   = 64,      /* FSMC global Interrupt                                */
+	SDIO_IRQn                   = 65,      /* SDIO global Interrupt                                */
+	TIM5_IRQn                   = 66,      /* TIM5 global Interrupt                                */
+	SPI3_IRQn                   = 67,      /* SPI3 global Interrupt                                */
+	UART4_IRQn                  = 68,      /* UART4 global Interrupt                               */
+	UART5_IRQn                  = 69,      /* UART5 global Interrupt                               */
 #endif
 
+#if defined(CH32V30x) || defined(CH32V20x)
+	TIM6_IRQn                   = 70,      /* TIM6 global Interrupt                                */
+	TIM7_IRQn                   = 71,      /* TIM7 global Interrupt                                */
+	DMA2_Channel1_IRQn          = 72,      /* DMA2 Channel 1 global Interrupt                      */
+	DMA2_Channel2_IRQn          = 73,      /* DMA2 Channel 2 global Interrupt                      */
+	DMA2_Channel3_IRQn          = 74,      /* DMA2 Channel 3 global Interrupt                      */
+	DMA2_Channel4_IRQn          = 75,      /* DMA2 Channel 4 global Interrupt                      */
+	DMA2_Channel5_IRQn          = 76,      /* DMA2 Channel 5 global Interrupt                      */
+	OTG_FS_IRQn                 = 83,      /* OTGFS global Interrupt NOTE: THIS APPEAR TO BE INCORRECT                */
+    USBHSWakeup_IRQn            = 84,      /* USBHS Wakeup Interrupt                               */
+    USBHS_IRQn                  = 85,      /* USBHS global Interrupt                               */
+    DVP_IRQn                    = 86,      /* DVP global Interrupt                                 */
+	UART6_IRQn                  = 87,      /* UART6 global Interrupt                               */
+	UART7_IRQn                  = 88,      /* UART7 global Interrupt                               */
+	UART8_IRQn                  = 89,      /* UART8 global Interrupt                               */
+	TIM9_BRK_IRQn               = 90,      /* TIM9 Break Interrupt                                 */
+	TIM9_UP_IRQn                = 91,      /* TIM9 Update Interrupt                                */
+	TIM9_TRG_COM_IRQn           = 92,      /* TIM9 Trigger and Commutation Interrupt               */
+	TIM9_CC_IRQn                = 93,      /* TIM9 Capture Compare Interrupt                       */
+	TIM10_BRK_IRQn              = 94,      /* TIM10 Break Interrupt                                */
+	TIM10_UP_IRQn               = 95,      /* TIM10 Update Interrupt                               */
+	TIM10_TRG_COM_IRQn          = 96,      /* TIM10 Trigger and Commutation Interrupt              */
+	TIM10_CC_IRQn               = 97,      /* TIM10 Capture Compare Interrupt                      */
+	DMA2_Channel6_IRQn          = 98,      /* DMA2 Channel 6 global Interrupt                      */
+	DMA2_Channel7_IRQn          = 99,      /* DMA2 Channel 7 global Interrupt                      */
+	DMA2_Channel8_IRQn          = 100,     /* DMA2 Channel 8 global Interrupt                      */
+	DMA2_Channel9_IRQn          = 101,     /* DMA2 Channel 9 global Interrupt                      */
+	DMA2_Channel10_IRQn         = 102,     /* DMA2 Channel 10 global Interrupt                     */
+	DMA2_Channel11_IRQn         = 103,     /* DMA2 Channel 11 global Interrupt                     */
 #endif
 
 } IRQn_Type;
 
-#include <stdint.h>
+
+#if defined (CH32V003) 
+
+/* memory mapped structure for SysTick */
+typedef struct
+{
+    __IO uint32_t CTLR;
+    __IO uint32_t SR;
+    __IO uint32_t CNT;
+    uint32_t RESERVED0;
+    __IO uint32_t CMP;
+    uint32_t RESERVED1;
+} SysTick_Type;
+
+#elif defined(CH32V20x) || defined(CH32V30x)
+
+/* memory mapped structure for SysTick */
+typedef struct
+{
+	__IO uint32_t CTLR;
+	__IO uint32_t SR;
+	__IO uint64_t CNT;
+	__IO uint64_t CMP;
+} SysTick_Type;
+
+#elif defined(CH32X03x)
+
+/* memory mapped structure for SysTick */
+typedef struct
+{
+  __IO uint32_t CTLR;
+  __IO uint32_t SR;
+  __IO uint32_t CNTL;
+  __IO uint32_t CNTH;
+  __IO uint32_t CMPL;
+  __IO uint32_t CMPH;
+} SysTick_Type;
+
+#elif defined(CH32V10x)
+
+/* memory mapped structure for SysTick */
+typedef struct
+{
+  __IO uint32_t CTLR;
+  __IO uint32_t CNTL;
+  __IO uint32_t CNTH;
+  __IO uint32_t CMPL;
+  __IO uint32_t CMPH;
+} SysTick_Type;
+
 #endif
+
+#endif /* __ASSEMBLER__*/
 
 #define HardFault_IRQn    EXC_IRQn
 
@@ -1000,11 +1027,10 @@ typedef struct
     __IO uint32_t APB1PCENR;
 #ifdef CH32V003
     __IO uint32_t RESERVED0;
-    __IO uint32_t RSTSCKR;
 #elif defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 	__IO uint32_t BDCTLR;
-	__IO uint32_t RSTSCKR;
 #endif
+	__IO uint32_t RSTSCKR;
 #if defined(CH32V20x) || defined(CH32V30x)
 	__IO uint32_t AHBRSTR;
 	__IO uint32_t CFGR2;
@@ -1200,6 +1226,13 @@ typedef struct
 {
     __IO uint32_t EXTEN_CTR;
 } EXTEN_TypeDef;
+
+/* The reference manual for the ch32v2xx/v3xx reference this as "CTR" field in the "EXTEND" register so adding an alias here. */
+typedef struct
+{
+    __IO uint32_t CTR;
+} EXTEND_TypeDef;
+
 
 #if defined(CH32V20x) || defined(CH32V30x)
 /* OPA Registers */
@@ -1452,7 +1485,93 @@ typedef struct  __attribute__((packed))
 
 #endif	// #if defined(CH32V30x)
 
-/* USBFS Registers */
+/* USBD Full-Speed Device, Chapter 21.
+ NOTE: USBD and CAN controller share a dedicated 512-byte SRAM area for data
+ transmission and reception in the design, so when using USBD and CAN functions
+ at the same time, this shared area needs to be allocated reasonably to prevent
+ data conflicts. */
+
+typedef struct 
+{
+	__IO uint32_t ADDn_TX;
+	__IO uint32_t COUNTn_TX;
+	__IO uint32_t ADDn_RX;
+	__IO uint32_t COUNTn_RX;
+} USBD_BTABLE_TypeDef;
+
+typedef struct
+{
+	__IO uint32_t EPR[8];
+	__IO uint32_t RESERVED[8];
+	__IO uint32_t CNTR;
+	__IO uint32_t ISTR;
+	__IO uint32_t FNR;
+	__IO uint32_t DADDR;
+	__IO uint32_t BTABLE;
+} USBD_TypeDef;
+
+#define CAN_USBD_SHARED_BASE   ((PERIPH_BASE + 0x6000))
+#define USBD_BASE              ((PERIPH_BASE + 0x5C00))
+
+/* USBD_CNTR */
+#define USBD_CTRM      (1<<15)
+#define USBD_PMAOVRM   (1<<14)
+#define USBD_ERRM      (1<<13)
+#define USBD_WKUPM     (1<<12)
+#define USBD_SUSPM     (1<<11)
+#define USBD_RESETM    (1<<10)
+#define USBD_SOFM      (1<<9)
+#define USBD_ESOFM     (1<<8)
+#define USBD_RESUME    (1<<4)
+#define USBD_FSUP      (1<<3)
+#define USBD_LPMODE    (1<<2)
+#define USBD_PDWN      (1<<1)
+#define USBD_FRES      (1<<0)
+
+/* USBD_ISTR */
+#define USBD_CTR       (1<<15)
+#define USBD_PMAOVR    (1<<14)
+#define USBD_ERR       (1<<13)
+#define USBD_WKUP      (1<<12)
+#define USBD_SUSP      (1<<11)
+#define USBD_RESET     (1<<10)
+#define USBD_SOF       (1<<9)
+#define USBD_ESOF      (1<<8)
+#define USBD_DIR       (1<<4)
+#define USBD_EP_ID     (0xf)
+
+/* USBD_FNR */
+#define USBD_RXDP      (1<<15)
+#define USBD_RXDM      (1<<14)
+#define USBD_LCK       (1<<13)
+#define USBD_LSOF      (3<<11)
+#define USBD_FN        (0x7ff)
+
+/* USBD_DADDR */
+#define USBD_EF        (1<<7)
+#define USBD_ADD       (0x7f)
+
+/* USBD_EPRx */
+#define USBD_CTR_RX    (1<<15)
+#define USBD_DTOG_RX   (1<<14)
+#define USBD_STAT_RX   (3<<12)
+#define USBD_SETUP     (1<<11)
+#define USBD_EPTYPE    (3<<9)
+#define USBD_EPKIND    (1<<8)
+#define USBD_CTR_TX    (1<<7)
+#define USBD_DTOG_TX   (1<<6)
+#define USBD_STAT_TX   (3<<4)
+#define USBD_EA        (0xf)
+
+/* USBD_COUNTx_RX */
+#define USBD_BLSIZE    (1<<15)
+#define USBD_NUM_BLOCK (0x1f<<10)
+#define USBD_COUNTx_RX 0x2ff
+
+
+#define USBD           ((USBD_TypeDef *) USBD_BASE)
+
+/* USB-FS-OTG Registers, Chapter 23. */
 typedef struct
 {
 	__IO uint8_t  BASE_CTRL;
@@ -1461,7 +1580,7 @@ typedef struct
 	__IO uint8_t  DEV_ADDR;
 	__IO uint8_t  Reserve0;
 	__IO uint8_t  MIS_ST;
-	__IO uint8_t  INT_FG;
+	__IO uint8_t  INT_FG; // "Combined" register in some situations. (ST_FG)
 	__IO uint8_t  INT_ST;
 	__IO uint32_t RX_LEN;
 	__IO uint8_t  UEP4_1_MOD;
@@ -1505,6 +1624,154 @@ typedef struct
 	__IO uint32_t OTG_SR;
 } USBOTG_FS_TypeDef;
 
+/* R8_USB_CTRL */
+#define USBOTG_UC_HOST_MODE         (1<<7)
+#define USBOTG_UC_LOW_SPEED         (1<<6)
+#define USBOTG_UC_DEV_PU_EN         (1<<5)
+#define USBOTG_UC_SYS_CTRL          (1<<4)
+#define USBOTG_UC_INT_BUSY          (1<<3)
+#define USBOTG_UC_RESET_SIE         (1<<2)
+#define USBOTG_UC_CLR_ALL           (1<<1)
+#define USBOTG_UC_DMA_EN            (1<<0)
+
+/* R8_USB_INT_EN */
+#define USBOTG_UIE_DEV_NAK          (1<<6)
+#define USBOTG_UIE_FIFO_OV          (1<<4)
+#define USBOTG_UIE_HST_SOF          (1<<3)
+#define USBOTG_UIE_SUSPEND          (1<<2)
+#define USBOTG_UIE_TRANSFER         (1<<1)
+#define USBOTG_UIE_DETECT           (1<<0)
+#define USBOTG_UIE_BUS_RST          (1<<0)
+
+/* R8_USB_DEV_AD */
+#define USBOTG_UDA_GP_BIT           (1<<7)
+#define USBOTG_USB_ADDR             (1<<6)
+
+/* R8_USB_MIS_ST */
+#define USBOTG_UMS_SOF_PRES         (1<<7)
+#define USBOTG_UMS_SOF_ACT          (1<<6)
+#define USBOTG_UMS_SIE_FREE         (1<<5)
+#define USBOTG_UMS_R_FIFO_RDY       (1<<4)
+#define USBOTG_UMS_BUS_RESET        (1<<3)
+#define USBOTG_UMS_SUSPEND          (1<<2)
+#define USBOTG_UMS_DM_LEVEL         (1<<1)
+#define USBOTG_UMS_DEV_ATTACH       (1<<0)
+
+/* R8_USB_INT_FG */
+#define USBOTG_U_IS_NAK             (1<<7)
+#define USBOTG_U_TOG_OK             (1<<6)
+#define USBOTG_U_SIE_FREE           (1<<5)
+#define USBOTG_UIF_FIFO_OV          (1<<4)
+#define USBOTG_UIF_HST_SOF          (1<<3)
+#define USBOTG_UIF_SUSPEND          (1<<2)
+#define USBOTG_UIF_TRANSFER         (1<<1)
+#define USBOTG_UIF_DETECT           (1<<0)
+#define USBOTG_UIF_BUS_RST          (1<<0)
+
+/* R8_USB_INT_ST */
+#define USBOTG_UIS_IS_NAK           (1<<7)
+#define USBOTG_UIS_TOG_OK           (1<<6)
+#define USBOTG_UIS_TOKEN            (3<<4)
+#define USBOTG_UIS_ENDP             0xf
+#define USBOTG_UIS_H_RES            0xf
+
+/* R32_USB_OTG_CR */
+#define USBOTG_CR_SESS_VTH          (1<<5)
+#define USBOTG_CR_VBUS_VTH          (1<<4)
+#define USBOTG_CR_OTG_EN            (1<<3)
+#define USBOTG_CR_IDPU              (1<<2)
+#define USBOTG_CR_CHARGE_VBUS       (1<<1)
+#define USBOTG_CR_DISCHAR_VBUS      (1<<0)
+
+/* R32_USB_OTG_SR */
+#define USBOTG_SR_ID_DIG            (1<<3)
+#define USBOTG_SR_SESS_END          (1<<2)
+#define USBOTG_SR_SESS_VLD          (1<<1)
+#define USBOTG_SR_VBUS_VLD          (1<<0)
+
+/* R8_UEPn_TX_CTRL */
+#define USBOTG_UEP_T_AUTO_TOG       (1<<3)
+#define USBOTG_UEP_T_TOG            (1<<2)
+#define USBOTG_UEP_T_RES_MASK       (3<<0)      // bit mask of handshake response type for USB endpoint X transmittal (IN)
+#define USBOTG_UEP_T_RES_ACK        (0<<1)
+#define USBOTG_UEP_T_RES_NONE       (1<<0)
+#define USBOTG_UEP_T_RES_NAK        (1<<1)
+#define USBOTG_UEP_T_RES_STALL      (3<<0)
+
+#define USBOTG_UEP_R_AUTO_TOG       (1<<3)      // enable automatic toggle after successful transfer completion on endpoint 1/2/3: 0=manual toggle, 1=automatic toggle
+#define USBOTG_UEP_R_TOG            (1<<2)      // expected data toggle flag of USB endpoint X receiving (OUT): 0=DATA0, 1=DATA1
+#define USBOTG_UEP_R_RES_MASK       (3<<0)      // bit mask of handshake response type for USB endpoint X receiving (OUT)
+#define USBOTG_UEP_R_RES_ACK        (0<<1)
+#define USBOTG_UEP_R_RES_NONE       (1<<0)
+#define USBOTG_UEP_R_RES_NAK        (1<<1)
+#define USBOTG_UEP_R_RES_STALL      (3<<0)
+
+
+
+/* R8_UEPn_ RX_CTRL */
+#define USBOTG_UEP_R_AUTO_TOG       (1<<3)
+#define USBOTG_UEP_R_TOG            (1<<2)
+#define USBOTG_UEP_R_RES            (3<<0)
+
+/* R8_UEP7_MOD */
+#define USBOTG_UEP7_RX_EN           (1<<3)
+#define USBOTG_UEP7_TX_EN           (1<<2)
+#define USBOTG_UEP7_BUF_MOD         (1<<0)
+
+/* R8_UEP5_6_MOD */
+#define USBOTG_UEP6_RX_EN           (1<<7)
+#define USBOTG_UEP6_TX_EN           (1<<6)
+#define USBOTG_UEP6_BUF_MOD         (1<<4)
+#define USBOTG_UEP5_RX_EN           (1<<3)
+#define USBOTG_UEP5_TX_EN           (1<<2)
+#define USBOTG_UEP5_BUF_MOD         (1<<0)
+
+/* R8_UEP2_3_MOD */
+#define USBOTG_UEP3_RX_EN           (1<<7)
+#define USBOTG_UEP3_TX_EN           (1<<6)
+#define USBOTG_UEP3_BUF_MOD         (1<<4)
+#define USBOTG_UEP2_RX_EN           (1<<3)
+#define USBOTG_UEP2_TX_EN           (1<<2)
+#define USBOTG_UEP2_BUF_MOD         (1<<0)
+
+/* R8_UEP4_1_MOD */
+#define USBOTG_UEP1_RX_EN           (1<<7)
+#define USBOTG_UEP1_TX_EN           (1<<6)
+#define USBOTG_UEP1_BUF_MOD         (1<<4)
+#define USBOTG_UEP4_RX_EN           (1<<3)
+#define USBOTG_UEP4_TX_EN           (1<<2)
+#define USBOTG_UEP4_BUF_MOD         (1<<0)
+
+/* R8_UDEV_CTRL */
+#define USBOTG_UD_PD_DIS            (1<<7)
+#define USBOTG_UD_DP_PIN            (1<<5)
+#define USBOTG_UD_DM_PIN            (1<<4)
+#define USBOTG_UD_LOW_SPEED         (1<<2)
+#define USBOTG_UD_GP_BIT            (1<<1)
+#define USBOTG_UD_PORT_EN           (1<<0)
+
+
+#define USBFS_UDA_GP_BIT            0x80
+#define USBFS_USB_ADDR_MASK         0x7F
+
+#define DEF_USBD_UEP0_SIZE		   64	 /* usb hs/fs device end-point 0 size */
+#define UEP_SIZE 64
+
+#define DEF_UEP_IN                  0x80
+#define DEF_UEP_OUT                 0x00
+#define DEF_UEP_BUSY                0x01
+#define DEF_UEP_FREE                0x00
+
+#define DEF_UEP0 0
+#define DEF_UEP1 1
+#define DEF_UEP2 2
+#define DEF_UEP3 3
+#define DEF_UEP4 4
+#define DEF_UEP5 5
+#define DEF_UEP6 6
+#define DEF_UEP7 7
+#define UNUM_EP 8
+
 typedef struct
 {
 	__IO uint8_t   BASE_CTRL;
@@ -1546,6 +1813,40 @@ typedef struct
 	__IO uint32_t  OTG_CR;
 	__IO uint32_t  OTG_SR;
 } USBOTG_FS_HOST_TypeDef;
+
+/* R8_UHOST_CTRL */
+#define USBOTG_UH_PD_DIS       (1<<7)
+#define USBOTG_UH_DP_PIN       (1<<5)
+#define USBOTG_UH_DM_PIN       (1<<4)
+#define USBOTG_UH_LOW_SPEED    (1<<2)
+#define USBOTG_UH_BUS_RESET    (1<<1)
+#define USBOTG_UH_PORT_EN      (1<<0)
+
+/* R32_UH_EP_MOD */
+#define USBOTG_UH_EP_TX_EN     (1<<6)
+#define USBOTG_UH_EP_TBUF_MOD  (1<<4)
+#define USBOTG_UH_EP_RX_EN     (1<<3)
+#define USBOTG_UH_EP_RBUF_MOD  (1<<0)
+
+/* R16_UH_SETUP */
+#define USBOTG_UH_PRE_PID_EN   (1<<10)
+#define USBOTG_UH_SOF_EN       (1<<2)
+
+/* R8_UH_EP_PID */
+#define USBOTG_UH_TOKEN        (0xf<<4)
+#define USBOTG_UH_ENDP         (0xf<<0)
+
+/* R8_UH_RX_CTRL */
+#define USBOTG_UH_R_AUTO_TOG   (1<<3)
+#define USBOTG_UH_R_TOG        (1<<2)
+#define USBOTG_UH_R_RES        (1<<0)
+
+/* R8_UH_TX_CTRL */
+#define USBOTG_UH_T_AUTO_TOG   (1<<3)
+#define USBOTG_UH_T_TOG        (1<<2)
+#define USBOTG_UH_T_RES        (1<<0)
+
+
 
 #if defined(CH32V30x)
 /* Ethernet MAC */
@@ -2385,6 +2686,7 @@ typedef struct
 #define ADC2                                    ((ADC_TypeDef *)ADC2_BASE)
 #endif
 #ifdef CH32X03x
+#define TIM3                                    ((TIM_TypeDef *)TIM3_BASE)
 #define TKey                                    ((TKEY_TypeDef *)ADC1_BASE)
 #define OPA										((OPACMP_TypeDef *)OPA_BASE)
 #define USBFS									((USBFS_TypeDef *)USBFS_BASE)
@@ -2467,6 +2769,7 @@ typedef struct
 #define OB                                      ((OB_TypeDef *)OB_BASE)
 #define ESIG                                    ((ESG_TypeDef *)ESIG_BASE)
 #define EXTEN                                   ((EXTEN_TypeDef *)EXTEN_BASE)
+#define EXTEND                                  ((EXTEND_TypeDef *)EXTEN_BASE)  // Alias to EXTEN
 
 #if defined(CH32V20x)
 #if defined(CH32V20x_D8) || defined(CH32V20x_D8W)
@@ -5259,6 +5562,39 @@ typedef struct
 #define AFIO_PCFR1_SWJ_CFG_JTAGDISABLE          ((uint32_t)0x02000000) /* JTAG-DP Disabled and SW-DP Enabled */
 #define AFIO_PCFR1_SWJ_CFG_DISABLE              ((uint32_t)0x04000000) /* JTAG-DP Disabled and SW-DP Disabled */
 
+
+#if defined(CH32V003)
+/*****************  Bit definition for AFIO_EXTICR register  *****************/
+#define AFIO_EXTICR_EXTI0                       ((uint16_t)0x0003) /* EXTI 0 configuration */
+#define AFIO_EXTICR_EXTI1                       ((uint16_t)0x000C) /* EXTI 1 configuration */
+#define AFIO_EXTICR_EXTI2                       ((uint16_t)0x0030) /* EXTI 2 configuration */
+#define AFIO_EXTICR_EXTI3                       ((uint16_t)0x00C0) /* EXTI 3 configuration */
+#define AFIO_EXTICR_EXTI4                       ((uint16_t)0x0300) /* EXTI 4 configuration */
+#define AFIO_EXTICR_EXTI5                       ((uint16_t)0x0C00) /* EXTI 5 configuration */
+#define AFIO_EXTICR_EXTI6                       ((uint16_t)0x3000) /* EXTI 6 configuration */
+#define AFIO_EXTICR_EXTI7                       ((uint16_t)0xC000) /* EXTI 7 configuration */
+
+#define AFIO_EXTICR_EXTI0_PC                    ((uint16_t)0x0002) /* PC[0] pin */
+#define AFIO_EXTICR_EXTI0_PD                    ((uint16_t)0x0003) /* PD[0] pin */
+#define AFIO_EXTICR_EXTI1_PA                    ((uint16_t)0x0000) /* PA[1] pin */
+#define AFIO_EXTICR_EXTI1_PC                    ((uint16_t)0x0008) /* PC[1] pin */
+#define AFIO_EXTICR_EXTI1_PD                    ((uint16_t)0x000C) /* PD[1] pin */
+#define AFIO_EXTICR_EXTI2_PA                    ((uint16_t)0x0000) /* PA[2] pin */
+#define AFIO_EXTICR_EXTI2_PC                    ((uint16_t)0x0020) /* PC[2] pin */
+#define AFIO_EXTICR_EXTI2_PD                    ((uint16_t)0x0030) /* PD[2] pin */
+#define AFIO_EXTICR_EXTI3_PC                    ((uint16_t)0x0080) /* PC[3] pin */
+#define AFIO_EXTICR_EXTI3_PD                    ((uint16_t)0x00C0) /* PD[3] pin */
+#define AFIO_EXTICR_EXTI4_PC                    ((uint16_t)0x0200) /* PC[4] pin */
+#define AFIO_EXTICR_EXTI4_PD                    ((uint16_t)0x0300) /* PD[4] pin */
+#define AFIO_EXTICR_EXTI5_PC                    ((uint16_t)0x0800) /* PC[5] pin */
+#define AFIO_EXTICR_EXTI5_PD                    ((uint16_t)0x0C00) /* PD[5] pin */
+#define AFIO_EXTICR_EXTI6_PC                    ((uint16_t)0x2000) /* PC[6] pin */
+#define AFIO_EXTICR_EXTI6_PD                    ((uint16_t)0x3000) /* PD[6] pin */
+#define AFIO_EXTICR_EXTI7_PC                    ((uint16_t)0x8000) /* PC[7] pin */
+#define AFIO_EXTICR_EXTI7_PD                    ((uint16_t)0xC000) /* PD[7] pin */
+#endif
+
+#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 /*****************  Bit definition for AFIO_EXTICR1 register  *****************/
 #define AFIO_EXTICR1_EXTI0                      ((uint16_t)0x000F) /* EXTI 0 configuration */
 #define AFIO_EXTICR1_EXTI1                      ((uint16_t)0x00F0) /* EXTI 1 configuration */
@@ -5297,7 +5633,6 @@ typedef struct
 #define AFIO_EXTICR1_EXTI3_PF                   ((uint16_t)0x5000) /* PF[3] pin */
 #define AFIO_EXTICR1_EXTI3_PG                   ((uint16_t)0x6000) /* PG[3] pin */
 
-#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 /*****************  Bit definition for AFIO_EXTICR2 register  *****************/
 #define AFIO_EXTICR2_EXTI4                      ((uint16_t)0x000F) /* EXTI 4 configuration */
 #define AFIO_EXTICR2_EXTI5                      ((uint16_t)0x00F0) /* EXTI 5 configuration */
@@ -5577,6 +5912,14 @@ typedef struct
 #define RCC_PLLON                               ((uint32_t)0x01000000) /* PLL enable */
 #define RCC_PLLRDY                              ((uint32_t)0x02000000) /* PLL clock ready flag */
 
+#if defined(CH32V30x)
+/* for CH32V307 */
+#define RCC_PLL3RDY								((uint32_t)(1<<29))
+#define RCC_PLL3ON								((uint32_t)(1<<28))
+#define RCC_PLL2RDY								((uint32_t)(1<<27))
+#define RCC_PLL2ON								((uint32_t)(1<<26))
+#endif
+
 /*******************  Bit definition for RCC_CFGR0 register  *******************/
 #define RCC_SW                                  ((uint32_t)0x00000003) /* SW[1:0] bits (System clock Switch) */
 #define RCC_SW_0                                ((uint32_t)0x00000001) /* Bit 0 */
@@ -5698,6 +6041,7 @@ typedef struct
 #endif
 
 #if defined(CH32V30x)
+
 /* for CH32V307 */
 #define  RCC_PLLMULL18_EXTEN             		((uint32_t)0x00000000) /* PLL input clock*18 */
 #define  RCC_PLLMULL3_EXTEN              		((uint32_t)0x00040000) /* PLL input clock*3 */
@@ -5729,6 +6073,32 @@ typedef struct
 #define RCC_CFGR0_MCO_HSI                       ((uint32_t)0x05000000) /* HSI clock selected as MCO source */
 #define RCC_CFGR0_MCO_HSE                       ((uint32_t)0x06000000) /* HSE clock selected as MCO source  */
 #define RCC_CFGR0_MCO_PLL                       ((uint32_t)0x07000000) /* PLL clock divided by 2 selected as MCO source */
+
+/*******************  Bit definition for RCC_CFGR2 register  *******************/
+#ifdef CH32V30x
+#define RCC_PREDIV1_OFFSET						(0)
+#define RCC_PREDIV1_MASK						((uint32_t)(0xf<<RCC_PREDIV1_OFFSET))
+#define RCC_PREDIV2_OFFSET						(4)
+#define RCC_PREDIV2_MASK						((uint32_t)(0xf<<RCC_PREDIV2_OFFSET))
+#define RCC_PLL2MUL_OFFSET						(8)
+#define RCC_PLL2MUL_MASK						((uint32_t)(0xf<<RCC_PLL2MUL_OFFSET))
+#define RCC_PLL3MUL_OFFSET						(12)
+#define RCC_PLL3MUL 							((uint32_t)(0xf<<RCC_PLL3MUL_OFFSET))
+#define RCC_PREDIV1SRC 							((uint32_t)(1<<16))
+#define RCC_I2S2SRC 							((uint32_t)(1<<17))
+#define RCC_I2S3SRC 							((uint32_t)(1<<18))
+#define RCC_RNG_SRC 							((uint32_t)(1<<19))
+#define RCC_ETH1GSRC_OFFSET						(20)
+#define RCC_ETH1GSRC_MASK						((uint32_t)(3<<RCC_ETH1GSRC_OFFSET))
+#define RCC_ETH1G_125M_EN						((uint32_t)(1<<22))
+#define RCC_USBHSDIV_OFFSET						(24)
+#define RCC_USBHSDIV_MASK						((uint32_t)(7<<RCC_USBHSDIV_OFFSET))
+#define RCC_USBHSPLLSRC							((uint32_t)(1<<27))
+#define RCC_USBHSCLK_OFFSET						(3)
+#define RCC_USBHSCLK_MASK						((uint32_t)(3<<RCC_USBHSCLK))
+#define RCC_USBHSPLL							((uint32_t)(1<<30))
+#define RCC_USBHSSRC							((uint32_t)(1<<31))
+#endif
 
 /*******************  Bit definition for RCC_INTR register  ********************/
 #define RCC_LSIRDYF                             ((uint32_t)0x00000001) /* LSI Ready Interrupt flag */
@@ -5785,13 +6155,27 @@ typedef struct
 #define RCC_USBRST                              ((uint32_t)0x00800000) /* USB Device reset */
 
 /******************  Bit definition for RCC_AHBPCENR register  ******************/
-#define RCC_DMA1EN                              ((uint16_t)0x0001) /* DMA1 clock enable */
-#define RCC_SRAMEN                              ((uint16_t)0x0004) /* SRAM interface clock enable */
-#define RCC_FLITFEN                             ((uint16_t)0x0010) /* FLITF clock enable */
-#define RCC_CRCEN                               ((uint16_t)0x0040) /* CRC clock enable */
-#define RCC_USBHD                               ((uint16_t)0x1000)
-#define RCC_USBFS                               ((uint16_t)0x1000)
-#define RCC_USBPD                               ((uint16_t)0x20000)
+#define RCC_DMA1EN                              ((uint32_t)0x0001) /* DMA1 clock enable */
+#define RCC_SRAMEN                              ((uint32_t)0x0004) /* SRAM interface clock enable */
+#define RCC_FLITFEN                             ((uint32_t)0x0010) /* FLITF clock enable */
+#define RCC_CRCEN                               ((uint32_t)0x0040) /* CRC clock enable */
+#define RCC_USBHD                               ((uint32_t)0x1000)
+#define RCC_USBFS                               ((uint32_t)0x1000)
+#define RCC_USBPD                               ((uint32_t)0x20000)
+#ifdef CH32V30x
+#define RCC_DMA2EN								((uint32_t)0x00000002)
+#define RCC_FSMCEN								((uint32_t)0x00000100)
+#define RCC_RNGEN								((uint32_t)0x00000200)
+#define RCC_SDIOEN								((uint32_t)0x00000400)
+#define RCC_USBHSEN								((uint32_t)0x00000800)
+#define RCC_OTG_FSEN							((uint32_t)0x00001000)
+#define RCC_DVPEN								((uint32_t)0x00002000)
+#define RCC_ETHMACEN							((uint32_t)0x00004000)
+#define RCC_ETHMACTXEN							((uint32_t)0x00008000)
+#define RCC_ETHMACRXEN							((uint32_t)0x00010000)
+#define RCC_BLEC								((uint32_t)0x00020000)
+#define RCC_DBLES								((uint32_t)0x00040000)
+#endif
 
 /******************  Bit definition for RCC_APB2PCENR register  *****************/
 #define RCC_AFIOEN                              ((uint32_t)0x00000001) /* Alternate Function I/O clock enable */
@@ -5848,6 +6232,14 @@ typedef struct
 #define RCC_IWDGRSTF                            ((uint32_t)0x20000000) /* Independent Watchdog reset flag */
 #define RCC_WWDGRSTF                            ((uint32_t)0x40000000) /* Window watchdog reset flag */
 #define RCC_LPWRRSTF                            ((uint32_t)0x80000000) /* Low-Power reset flag */
+
+/******************  Bit definition for RCC_AHBRSTR register  *****************/
+#if defined(CH32V30x)
+#define RCC_ETHMACRST							((uint32_t)(1<<14))
+#define RCC_DVPRST								((uint32_t)(1<<13))
+#define RCC_OTGFSRST							((uint32_t)(1<<12))
+#endif
+
 
 #if defined(CH32V30x)
 /******************************************************************************/
@@ -6661,27 +7053,6 @@ with 00h to 64 bytes, otherwise the short packet is filled with 60 bytes of 0, a
 
 #endif /* __CH32V00x_H */
 
-/*
- * This file contains the contents of various parts of the evt.
- * 
- * The collection of this file was generated by cnlohr, 2023-02-18
- * and AlexanderMandera, 2023-06-23
- *
- * Contents subject to below copyright where applicable by law. 
- *
- * (IANAL, BUT Because it is an interface, it is unlikely protected by copyright)
- *
- *********************************** (C) COPYRIGHT *******************************
- * File Name          : ------------------
- * Author             : WCH
- * Version            : V1.0.0
- * Date               : 2020/08/08
- * Description        : Library configuration file.
-*********************************************************************************
-* Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
-* Attention: This software (modified or not) and binary are used for 
-* microcontroller manufactured by Nanjing Qinheng Microelectronics.
-*******************************************************************************/
 #ifndef __CH32V00x_CONF_H
 #define __CH32V00x_CONF_H
 
@@ -9478,7 +9849,7 @@ typedef enum
 /* Output Maximum frequency selection */
 typedef enum
 {
-	GPIO_Speed_In,
+	GPIO_Speed_In = 0,
 	GPIO_Speed_10MHz,
 	GPIO_Speed_2MHz,
 	GPIO_Speed_50MHz
@@ -10437,6 +10808,7 @@ typedef struct
 /* APB2_peripheral */
 #define RCC_APB2Periph_GPIOB             ((uint32_t)0x00000008)
 
+#define RCC_APB1Periph_TIM3              ((uint32_t)0x00000002)
 #define RCC_APB1Periph_USART2            ((uint32_t)0x00020000)
 #define RCC_APB1Periph_USART3            ((uint32_t)0x00040000)
 #define RCC_APB1Periph_UART4             ((uint32_t)0x00080000)
@@ -10864,7 +11236,7 @@ typedef struct
 #define SPI_Direction_1Line_Tx             ((uint16_t)0xC000)
 
 /* SPI_mode */
-#define SPI_Mode_Master                    ((uint16_t)0x0104)
+#define SPI_Mode_Master                    ((uint16_t)0x0104) /* Sets MSTR, as well as SSI, which is required for Master Mode */
 #define SPI_Mode_Slave                     ((uint16_t)0x0000)
 
 /* SPI_data_size */
@@ -11709,6 +12081,712 @@ typedef volatile unsigned long *PUINT32V;
 
 #endif
 
+/* ch32v30x_usb.h ------------------------------------------------------------*/
+
+#if defined(CH32V30x)
+
+/*******************************************************************************/
+/* USB Communication Related Macro Definition */
+/* USB Endpoint0 Size */
+#ifndef DEFAULT_ENDP0_SIZE
+    #define DEFAULT_ENDP0_SIZE          8          // default maximum packet size for endpoint 0
+#endif
+
+#ifndef MAX_PACKET_SIZE
+    #define MAX_PACKET_SIZE             64         // maximum packet size
+#endif
+
+/* USB PID */
+#ifndef USB_PID_SETUP
+#define USB_PID_NULL                0x00
+#define USB_PID_SOF                 0x05
+#define USB_PID_SETUP               0x0D
+#define USB_PID_IN                  0x09
+#define USB_PID_OUT                 0x01
+#define USB_PID_NYET                0x06
+#define USB_PID_ACK                 0x02
+#define USB_PID_NAK                 0x0A
+#define USB_PID_STALL               0x0E
+#define USB_PID_DATA0               0x03
+#define USB_PID_DATA1               0x0B
+#define USB_PID_DATA2               0x07
+#define USB_PID_MDATA               0x0F
+#define USB_PID_PRE                 0x0C
+#endif
+
+/* USB standard device request code */
+#ifndef USB_GET_DESCRIPTOR
+#define USB_GET_STATUS              0x00
+#define USB_CLEAR_FEATURE           0x01
+#define USB_SET_FEATURE             0x03
+#define USB_SET_ADDRESS             0x05
+#define USB_GET_DESCRIPTOR          0x06
+#define USB_SET_DESCRIPTOR          0x07
+#define USB_GET_CONFIGURATION       0x08
+#define USB_SET_CONFIGURATION       0x09
+#define USB_GET_INTERFACE           0x0A
+#define USB_SET_INTERFACE           0x0B
+#define USB_SYNCH_FRAME             0x0C
+#endif
+
+#define DEF_STRING_DESC_LANG        0x00
+#define DEF_STRING_DESC_MANU        0x01
+#define DEF_STRING_DESC_PROD        0x02
+#define DEF_STRING_DESC_SERN        0x03
+
+/* USB hub class request code */
+#ifndef HUB_GET_DESCRIPTOR
+#define HUB_GET_STATUS              0x00
+#define HUB_CLEAR_FEATURE           0x01
+#define HUB_GET_STATE               0x02
+#define HUB_SET_FEATURE             0x03
+#define HUB_GET_DESCRIPTOR          0x06
+#define HUB_SET_DESCRIPTOR          0x07
+#endif
+
+/* USB HID class request code */
+#ifndef HID_GET_REPORT
+#define HID_GET_REPORT              0x01
+#define HID_GET_IDLE                0x02
+#define HID_GET_PROTOCOL            0x03
+#define HID_SET_REPORT              0x09
+#define HID_SET_IDLE                0x0A
+#define HID_SET_PROTOCOL            0x0B
+#endif
+
+/* USB CDC Class request code */
+#ifndef CDC_GET_LINE_CODING
+#define CDC_GET_LINE_CODING         0x21                                      /* This request allows the host to find out the currently configured line coding */
+#define CDC_SET_LINE_CODING         0x20                                      /* Configures DTE rate, stop-bits, parity, and number-of-character */
+#define CDC_SET_LINE_CTLSTE         0x22                                      /* This request generates RS-232/V.24 style control signals */
+#define CDC_SEND_BREAK              0x23                                      /* Sends special carrier modulation used to specify RS-232 style break */
+#endif
+
+/* Bit Define for USB Request Type */
+#ifndef USB_REQ_TYP_MASK
+#define USB_REQ_TYP_IN              0x80
+#define USB_REQ_TYP_OUT             0x00
+#define USB_REQ_TYP_READ            0x80
+#define USB_REQ_TYP_WRITE           0x00
+#define USB_REQ_TYP_MASK            0x60
+#define USB_REQ_TYP_STANDARD        0x00
+#define USB_REQ_TYP_CLASS           0x20
+#define USB_REQ_TYP_VENDOR          0x40
+#define USB_REQ_TYP_RESERVED        0x60
+#define USB_REQ_RECIP_MASK          0x1F
+#define USB_REQ_RECIP_DEVICE        0x00
+#define USB_REQ_RECIP_INTERF        0x01
+#define USB_REQ_RECIP_ENDP          0x02
+#define USB_REQ_RECIP_OTHER         0x03
+#define USB_REQ_FEAT_REMOTE_WAKEUP  0x01
+#define USB_REQ_FEAT_ENDP_HALT      0x00
+#endif
+
+/* USB Descriptor Type */
+#ifndef USB_DESCR_TYP_DEVICE
+#define USB_DESCR_TYP_DEVICE        0x01
+#define USB_DESCR_TYP_CONFIG        0x02
+#define USB_DESCR_TYP_STRING        0x03
+#define USB_DESCR_TYP_INTERF        0x04
+#define USB_DESCR_TYP_ENDP          0x05
+#define USB_DESCR_TYP_QUALIF        0x06
+#define USB_DESCR_TYP_SPEED         0x07
+#define USB_DESCR_TYP_OTG           0x09
+#define USB_DESCR_TYP_BOS           0X0F
+#define USB_DESCR_TYP_HID           0x21
+#define USB_DESCR_TYP_REPORT        0x22
+#define USB_DESCR_TYP_PHYSIC        0x23
+#define USB_DESCR_TYP_CS_INTF       0x24
+#define USB_DESCR_TYP_CS_ENDP       0x25
+#define USB_DESCR_TYP_HUB           0x29
+#endif
+
+/* USB Device Class */
+#ifndef USB_DEV_CLASS_HUB
+#define USB_DEV_CLASS_RESERVED      0x00
+#define USB_DEV_CLASS_AUDIO         0x01
+#define USB_DEV_CLASS_COMMUNIC      0x02
+#define USB_DEV_CLASS_HID           0x03
+#define USB_DEV_CLASS_MONITOR       0x04
+#define USB_DEV_CLASS_PHYSIC_IF     0x05
+#define USB_DEV_CLASS_POWER         0x06
+#define USB_DEV_CLASS_IMAGE         0x06
+#define USB_DEV_CLASS_PRINTER       0x07
+#define USB_DEV_CLASS_STORAGE       0x08
+#define USB_DEV_CLASS_HUB           0x09
+#define USB_DEV_CLASS_VEN_SPEC      0xFF
+#endif
+
+/* USB Hub Class Request */
+#ifndef HUB_GET_HUB_DESCRIPTOR
+#define HUB_CLEAR_HUB_FEATURE       0x20
+#define HUB_CLEAR_PORT_FEATURE      0x23
+#define HUB_GET_BUS_STATE           0xA3
+#define HUB_GET_HUB_DESCRIPTOR      0xA0
+#define HUB_GET_HUB_STATUS          0xA0
+#define HUB_GET_PORT_STATUS         0xA3
+#define HUB_SET_HUB_DESCRIPTOR      0x20
+#define HUB_SET_HUB_FEATURE         0x20
+#define HUB_SET_PORT_FEATURE        0x23
+#endif
+
+/* Hub Class Feature Selectors */
+#ifndef HUB_PORT_RESET
+#define HUB_C_HUB_LOCAL_POWER       0
+#define HUB_C_HUB_OVER_CURRENT      1
+#define HUB_PORT_CONNECTION         0
+#define HUB_PORT_ENABLE             1
+#define HUB_PORT_SUSPEND            2
+#define HUB_PORT_OVER_CURRENT       3
+#define HUB_PORT_RESET              4
+#define HUB_PORT_POWER              8
+#define HUB_PORT_LOW_SPEED          9
+#define HUB_C_PORT_CONNECTION       16
+#define HUB_C_PORT_ENABLE           17
+#define HUB_C_PORT_SUSPEND          18
+#define HUB_C_PORT_OVER_CURRENT     19
+#define HUB_C_PORT_RESET            20
+#endif
+
+/* USB UDisk */
+#ifndef USB_BO_CBW_SIZE
+#define USB_BO_CBW_SIZE             0x1F
+#define USB_BO_CSW_SIZE             0x0D
+#endif
+#ifndef USB_BO_CBW_SIG0
+#define USB_BO_CBW_SIG0             0x55
+#define USB_BO_CBW_SIG1             0x53
+#define USB_BO_CBW_SIG2             0x42
+#define USB_BO_CBW_SIG3             0x43
+#define USB_BO_CSW_SIG0             0x55
+#define USB_BO_CSW_SIG1             0x53
+#define USB_BO_CSW_SIG2             0x42
+#define USB_BO_CSW_SIG3             0x53
+#endif
+
+
+/******************************************************************************/
+/* USBHS Clock Configuration Related Macro Definition */
+#define USB_CLK_SRC                 0x80000000
+#define USBHS_PLL_ALIVE             0x40000000
+#define USBHS_PLL_CKREF_MASK        0x30000000
+#define USBHS_PLL_CKREF_3M          0x00000000
+#define USBHS_PLL_CKREF_4M          0x10000000
+#define USBHS_PLL_CKREF_8M          0x20000000
+#define USBHS_PLL_CKREF_5M          0x30000000
+#define USBHS_PLL_SRC               0x08000000
+#define USBHS_PLL_SRC_PRE_MASK      0x07000000
+#define USBHS_PLL_SRC_PRE_DIV1      0x00000000
+#define USBHS_PLL_SRC_PRE_DIV2      0x01000000
+#define USBHS_PLL_SRC_PRE_DIV3      0x02000000
+#define USBHS_PLL_SRC_PRE_DIV4      0x03000000
+#define USBHS_PLL_SRC_PRE_DIV5      0x04000000
+#define USBHS_PLL_SRC_PRE_DIV6      0x05000000
+#define USBHS_PLL_SRC_PRE_DIV7      0x06000000
+#define USBHS_PLL_SRC_PRE_DIV8      0x07000000
+
+
+/*******************************************************************************/
+/* USBHS Related Register Macro Definition */
+
+/* R8_USB_CTRL */
+#define USBHS_UC_HOST_MODE          0x80
+#define USBHS_UC_SPEED_TYPE         0x60
+#define USBHS_UC_SPEED_LOW          0x40
+#define USBHS_UC_SPEED_FULL         0x00
+#define USBHS_UC_SPEED_HIGH         0x20
+#define USBHS_UC_DEV_PU_EN          0x10
+#define USBHS_UC_INT_BUSY           0x08
+#define USBHS_UC_RESET_SIE          0x04
+#define USBHS_UC_CLR_ALL            0x02
+#define USBHS_UC_DMA_EN             0x01
+
+/* R8_USB_INT_EN */
+#define USBHS_UIE_DEV_NAK           0x80
+#define USBHS_UIE_ISO_ACT           0x40
+#define USBHS_UIE_SETUP_ACT         0x20
+#define USBHS_UIE_FIFO_OV           0x10
+#define USBHS_UIE_SOF_ACT           0x08
+#define USBHS_UIE_SUSPEND           0x04
+#define USBHS_UIE_TRANSFER          0x02
+#define USBHS_UIE_DETECT            0x01
+#define USBHS_UIE_BUS_RST           0x01
+
+/* R16_USB_DEV_AD */
+#define USBHS_MASK_USB_ADDR         0x7F
+
+/* R16_USB_FRAME_NO */
+#define USBHS_MICRO_FRAME_NUM       0xE000
+#define USBHS_SOF_FRAME_NUM         0x07FF
+
+/* R8_USB_SUSPEND */
+#define USBHS_USB_LINESTATE         0x30
+#define USBHS_USB_WAKEUP_ST         0x04
+#define USBHS_USB_SYS_MOD           0x03
+
+/* R8_USB_SPEED_TYPE */
+#define USBHS_USB_SPEED_TYPE        0x03
+#define USBHS_USB_SPEED_LOW         0x02
+#define USBHS_USB_SPEED_FULL        0x00
+#define USBHS_USB_SPEED_HIGH        0x01
+
+/* R8_USB_MIS_ST */
+#define USBHS_UMS_SOF_PRES          0x80
+#define USBHS_UMS_SOF_ACT           0x40
+#define USBHS_UMS_SIE_FREE          0x20
+#define USBHS_UMS_R_FIFO_RDY        0x10
+#define USBHS_UMS_BUS_RESET         0x08
+#define USBHS_UMS_SUSPEND           0x04
+#define USBHS_UMS_DEV_ATTACH        0x02
+#define USBHS_UMS_SPLIT_CAN         0x01
+
+/* R8_USB_INT_FG */
+#define USBHS_UIF_ISO_ACT           0x40
+#define USBHS_UIF_SETUP_ACT         0x20
+#define USBHS_UIF_FIFO_OV           0x10
+#define USBHS_UIF_HST_SOF           0x08
+#define USBHS_UIF_SUSPEND           0x04
+#define USBHS_UIF_TRANSFER          0x02
+#define USBHS_UIF_DETECT            0x01
+#define USBHS_UIF_BUS_RST           0x01
+
+/* R8_USB_INT_ST */
+#define USBHS_UIS_IS_NAK            0x80
+#define USBHS_UIS_TOG_OK            0x40
+#define USBHS_UIS_TOKEN_MASK        0x30
+#define USBHS_UIS_TOKEN_OUT         0x00
+#define USBHS_UIS_TOKEN_SOF         0x10
+#define USBHS_UIS_TOKEN_IN          0x20
+#define USBHS_UIS_TOKEN_SETUP       0x30
+#define USBHS_UIS_ENDP_MASK         0x0F
+#define USBHS_UIS_H_RES_MASK        0x0F
+
+/* R16_USB_RX_LEN */
+#define USBHS_USB_RX_LEN            0xFFFF
+
+/* R32_UEP_CONFIG */
+#define USBHS_UEP15_R_EN            0x80000000
+#define USBHS_UEP14_R_EN            0x40000000
+#define USBHS_UEP13_R_EN            0x20000000
+#define USBHS_UEP12_R_EN            0x10000000
+#define USBHS_UEP11_R_EN            0x08000000
+#define USBHS_UEP10_R_EN            0x04000000
+#define USBHS_UEP9_R_EN             0x02000000
+#define USBHS_UEP8_R_EN             0x01000000
+#define USBHS_UEP7_R_EN             0x00800000
+#define USBHS_UEP6_R_EN             0x00400000
+#define USBHS_UEP5_R_EN             0x00200000
+#define USBHS_UEP4_R_EN             0x00100000
+#define USBHS_UEP3_R_EN             0x00080000
+#define USBHS_UEP2_R_EN             0x00040000
+#define USBHS_UEP1_R_EN             0x00020000
+#define USBHS_UEP0_R_EN             0x00010000
+#define USBHS_UEP15_T_EN            0x00008000
+#define USBHS_UEP14_T_EN            0x00004000
+#define USBHS_UEP13_T_EN            0x00002000
+#define USBHS_UEP12_T_EN            0x00001000
+#define USBHS_UEP11_T_EN            0x00000800
+#define USBHS_UEP10_T_EN            0x00000400
+#define USBHS_UEP9_T_EN             0x00000200
+#define USBHS_UEP8_T_EN             0x00000100
+#define USBHS_UEP7_T_EN             0x00000080
+#define USBHS_UEP6_T_EN             0x00000040
+#define USBHS_UEP5_T_EN             0x00000020
+#define USBHS_UEP4_T_EN             0x00000010
+#define USBHS_UEP3_T_EN             0x00000008
+#define USBHS_UEP2_T_EN             0x00000004
+#define USBHS_UEP1_T_EN             0x00000002
+#define USBHS_UEP0_T_EN             0x00000001
+
+/* R32_UEP_TYPE */
+#define USBHS_UEP15_R_TYPE          0x80000000
+#define USBHS_UEP14_R_TYPE          0x40000000
+#define USBHS_UEP13_R_TYPE          0x20000000
+#define USBHS_UEP12_R_TYPE          0x10000000
+#define USBHS_UEP11_R_TYPE          0x08000000
+#define USBHS_UEP10_R_TYPE          0x04000000
+#define USBHS_UEP9_R_TYPE           0x02000000
+#define USBHS_UEP8_R_TYPE           0x01000000
+#define USBHS_UEP7_R_TYPE           0x00800000
+#define USBHS_UEP6_R_TYPE           0x00400000
+#define USBHS_UEP5_R_TYPE           0x00200000
+#define USBHS_UEP4_R_TYPE           0x00100000
+#define USBHS_UEP3_R_TYPE           0x00080000
+#define USBHS_UEP2_R_TYPE           0x00040000
+#define USBHS_UEP1_R_TYPE           0x00020000
+#define USBHS_UEP0_R_TYPE           0x00010000
+#define USBHS_UEP15_T_TYPE          0x00008000
+#define USBHS_UEP14_T_TYPE          0x00004000
+#define USBHS_UEP13_T_TYPE          0x00002000
+#define USBHS_UEP12_T_TYPE          0x00001000
+#define USBHS_UEP11_T_TYPE          0x00000800
+#define USBHS_UEP10_T_TYPE          0x00000400
+#define USBHS_UEP9_T_TYPE           0x00000200
+#define USBHS_UEP8_T_TYPE           0x00000100
+#define USBHS_UEP7_T_TYPE           0x00000080
+#define USBHS_UEP6_T_TYPE           0x00000040
+#define USBHS_UEP5_T_TYPE           0x00000020
+#define USBHS_UEP4_T_TYPE           0x00000010
+#define USBHS_UEP3_T_TYPE           0x00000008
+#define USBHS_UEP2_T_TYPE           0x00000004
+#define USBHS_UEP1_T_TYPE           0x00000002
+#define USBHS_UEP0_T_TYPE           0x00000001
+
+/* R32_UEP_BUF_MOD */
+#define USBHS_UEP15_ISO_BUF_MOD     0x80000000
+#define USBHS_UEP14_ISO_BUF_MOD     0x40000000
+#define USBHS_UEP13_ISO_BUF_MOD     0x20000000
+#define USBHS_UEP12_ISO_BUF_MOD     0x10000000
+#define USBHS_UEP11_ISO_BUF_MOD     0x08000000
+#define USBHS_UEP10_ISO_BUF_MOD     0x04000000
+#define USBHS_UEP9_ISO_BUF_MOD      0x02000000
+#define USBHS_UEP8_ISO_BUF_MOD      0x01000000
+#define USBHS_UEP7_ISO_BUF_MOD      0x00800000
+#define USBHS_UEP6_ISO_BUF_MOD      0x00400000
+#define USBHS_UEP5_ISO_BUF_MOD      0x00200000
+#define USBHS_UEP4_ISO_BUF_MOD      0x00100000
+#define USBHS_UEP3_ISO_BUF_MOD      0x00080000
+#define USBHS_UEP2_ISO_BUF_MOD      0x00040000
+#define USBHS_UEP1_ISO_BUF_MOD      0x00020000
+#define USBHS_UEP0_ISO_BUF_MOD      0x00010000
+#define USBHS_UEP15_BUF_MOD         0x00008000
+#define USBHS_UEP14_BUF_MOD         0x00004000
+#define USBHS_UEP13_BUF_MOD         0x00002000
+#define USBHS_UEP12_BUF_MOD         0x00001000
+#define USBHS_UEP11_BUF_MOD         0x00000800
+#define USBHS_UEP10_BUF_MOD         0x00000400
+#define USBHS_UEP9_BUF_MOD          0x00000200
+#define USBHS_UEP8_BUF_MOD          0x00000100
+#define USBHS_UEP7_BUF_MOD          0x00000080
+#define USBHS_UEP6_BUF_MOD          0x00000040
+#define USBHS_UEP5_BUF_MOD          0x00000020
+#define USBHS_UEP4_BUF_MOD          0x00000010
+#define USBHS_UEP3_BUF_MOD          0x00000008
+#define USBHS_UEP2_BUF_MOD          0x00000004
+#define USBHS_UEP1_BUF_MOD          0x00000002
+#define USBHS_UEP0_BUF_MOD          0x00000001
+
+/* R32_UEP0_DMA */
+#define USBHS_UEP0_DMA              0x0000FFFF
+
+/* R32_UEPn_TX_DMA, n=1-15 */
+#define USBHS_UEPn_TX_DMA           0x0000FFFF
+
+/* R32_UEPn_RX_DMA, n=1-15 */
+#define USBHS_UEPn_RX_DMA           0x0000FFFF
+
+/* R16_UEPn_MAX_LEN, n=0-15 */
+#define USBHS_UEPn_MAX_LEN          0x07FF
+
+/* R16_UEPn_T_LEN, n=0-15 */
+#define USBHS_UEPn_T_LEN            0x07FF
+
+/* R8_UEPn_TX_CTRL, n=0-15 */
+#define USBHS_UEP_T_TOG_AUTO        0x20
+#define USBHS_UEP_T_TOG_MASK        0x18
+#define USBHS_UEP_T_TOG_DATA0       0x00
+#define USBHS_UEP_T_TOG_DATA1       0x08
+#define USBHS_UEP_T_TOG_DATA2       0x10
+#define USBHS_UEP_T_TOG_MDATA       0x18
+#define USBHS_UEP_T_RES_MASK        0x03
+#define USBHS_UEP_T_RES_ACK         0x00
+#define USBHS_UEP_T_RES_NYET        0x01
+#define USBHS_UEP_T_RES_NAK         0x02
+#define USBHS_UEP_T_RES_STALL       0x03
+
+/* R8_UEPn_TX_CTRL, n=0-15 */
+#define USBHS_UEP_R_TOG_AUTO        0x20
+#define USBHS_UEP_R_TOG_MASK        0x18
+#define USBHS_UEP_R_TOG_DATA0       0x00
+#define USBHS_UEP_R_TOG_DATA1       0x08
+#define USBHS_UEP_R_TOG_DATA2       0x10
+#define USBHS_UEP_R_TOG_MDATA       0x18
+#define USBHS_UEP_R_RES_MASK        0x03
+#define USBHS_UEP_R_RES_ACK         0x00
+#define USBHS_UEP_R_RES_NYET        0x01
+#define USBHS_UEP_R_RES_NAK         0x02
+#define USBHS_UEP_R_RES_STALL       0x03
+
+/* R8_UHOST_CTRL */
+#define USBHS_UH_SOF_EN             0x80
+#define USBHS_UH_SOF_FREE           0x40
+#define USBHS_UH_PHY_SUSPENDM       0x10
+#define USBHS_UH_REMOTE_WKUP        0x08
+#define USBHS_UH_TX_BUS_RESUME      0x04
+#define USBHS_UH_TX_BUS_SUSPEND     0x02
+#define USBHS_UH_TX_BUS_RESET       0x01
+
+/* R32_UH_CONFIG */
+#define USBHS_UH_EP_RX_EN           0x00040000
+#define USBHS_UH_EP_TX_EN           0x00000008
+
+/* R32_UH_EP_TYPE */
+#define USBHS_UH_EP_RX_TYPE         0x00040000
+#define USBHS_UH_EP_TX_TYPE         0x00000008
+
+/* R32_UH_RX_DMA */
+#define USBHS_UH_RX_DMA             0x0000FFFC
+
+/* R32_UH_TX_DMA */
+#define USBHS_UH_TX_DMA             0x0000FFFF
+
+/* R16_UH_RX_MAX_LEN */
+#define USBHS_UH_RX_MAX_LEN         0x07FF
+
+/* R8_UH_EP_PID */
+#define USBHS_UH_TOKEN_MASK         0xF0
+#define USBHS_UH_ENDP_MASK          0x0F
+
+/* R8_UH_RX_CTRL */
+#define USBHS_UH_R_DATA_NO          0x40
+#define USBHS_UH_R_TOG_AUTO         0x20
+#define USBHS_UH_R_TOG_MASK         0x18
+#define USBHS_UH_R_TOG_DATA0        0x00
+#define USBHS_UH_R_TOG_DATA1        0x08
+#define USBHS_UH_R_TOG_DATA2        0x10
+#define USBHS_UH_R_TOG_MDATA        0x18
+#define USBHS_UH_R_RES_NO           0x04
+#define USBHS_UH_R_RES_MASK         0x03
+#define USBHS_UH_R_RES_ACK          0x00
+#define USBHS_UH_R_RES_NYET         0x01
+#define USBHS_UH_R_RES_NAK          0x02
+#define USBHS_UH_R_RES_STALL        0x03
+
+/* R16_UH_TX_LEN */
+#define USBHS_UH_TX_LEN             0x07FF
+
+/* R8_UH_TX_CTRL */
+#define USBHS_UH_T_DATA_NO          0x40
+#define USBHS_UH_T_AUTO_TOG         0x20
+#define USBHS_UH_T_TOG_MASK         0x18
+#define USBHS_UH_T_TOG_DATA0        0x00
+#define USBHS_UH_T_TOG_DATA1        0x08
+#define USBHS_UH_T_TOG_DATA2        0x10
+#define USBHS_UH_T_TOG_MDATA        0x18
+#define USBHS_UH_T_RES_NO           0x04
+#define USBHS_UH_T_RES_MASK         0x03
+#define USBHS_UH_T_RES_ACK          0x00
+#define USBHS_UH_T_RES_NYET         0x01
+#define USBHS_UH_T_RES_NAK          0x02
+#define USBHS_UH_T_RES_STALL        0x03
+
+/* R16_UH_SPLIT_DATA */
+#define USBHS_UH_SPLIT_DATA         0x0FFF
+
+/* USBHS Registers from ch32v30x_usbhs_device.h */
+
+#define USBHSD_UEP_CFG_BASE         0x40023410
+#define USBHSD_UEP_BUF_MOD_BASE     0x40023418
+#define USBHSD_UEP_RXDMA_BASE       0x40023420
+#define USBHSD_UEP_TXDMA_BASE       0x4002345C
+#define USBHSD_UEP_TXLEN_BASE       0x400234DC
+#define USBHSD_UEP_TXCTL_BASE       0x400234DE
+#define USBHSD_UEP_TXCTL_BASE       0x400234DE
+#define USBHSD_UEP_TX_EN( N )       ( (uint16_t)( 0x01 << N ) )
+#define USBHSD_UEP_RX_EN( N )       ( (uint16_t)( 0x01 << ( N + 16 ) ) )
+#define USBHSD_UEP_DOUBLE_BUF( N )  ( (uint16_t)( 0x01 << N ) )
+#define DEF_UEP_DMA_LOAD            0 /* Direct the DMA address to the data to be processed */
+#define DEF_UEP_CPY_LOAD            1 /* Use memcpy to move data to a buffer */
+#define USBHSD_UEP_RXDMA( N )       ( *((volatile uint32_t *)( USBHSD_UEP_RXDMA_BASE + ( N - 1 ) * 0x04 ) ) )
+#define USBHSD_UEP_RXBUF( N )       ( (uint8_t *)(*((volatile uint32_t *)( USBHSD_UEP_RXDMA_BASE + ( N - 1 ) * 0x04 ) ) ) + 0x20000000 )
+#define USBHSD_UEP_TXCTRL( N )      ( *((volatile uint8_t *)( USBHSD_UEP_TXCTL_BASE + ( N - 1 ) * 0x04 ) ) )
+#define USBHSD_UEP_RXCTRL( N )      ( *((volatile uint8_t *)( USBHSD_UEP_TXCTL_BASE + ( N - 1 ) * 0x04 + 1 ) ) )
+#define USBHSD_UEP_TXDMA( N )       ( *((volatile uint32_t *)( USBHSD_UEP_TXDMA_BASE + ( N - 1 ) * 0x04 ) ) )
+#define USBHSD_UEP_TXBUF( N )       ( (uint8_t *)(*((volatile uint32_t *)( USBHSD_UEP_TXDMA_BASE + ( N - 1 ) * 0x04 ) ) ) + 0x20000000 )
+#define USBHSD_UEP_TLEN( N )        ( *((volatile uint16_t *)( USBHSD_UEP_TXLEN_BASE + ( N - 1 ) * 0x04 ) ) )
+
+
+/*******************************************************************************/
+/* USBFS Related Register Macro Definition */
+
+/* R8_USB_CTRL */
+#define USBFS_UC_HOST_MODE          0x80
+#define USBFS_UC_LOW_SPEED          0x40
+#define USBFS_UC_DEV_PU_EN          0x20
+#define USBFS_UC_SYS_CTRL_MASK      0x30
+#define USBFS_UC_SYS_CTRL0          0x00
+#define USBFS_UC_SYS_CTRL1          0x10
+#define USBFS_UC_SYS_CTRL2          0x20
+#define USBFS_UC_SYS_CTRL3          0x30
+#define USBFS_UC_INT_BUSY           0x08
+#define USBFS_UC_RESET_SIE          0x04
+#define USBFS_UC_CLR_ALL            0x02
+#define USBFS_UC_DMA_EN             0x01
+
+/* R8_USB_INT_EN */
+#define USBFS_UIE_DEV_SOF           0x80
+#define USBFS_UIE_DEV_NAK           0x40
+#define USBFS_1WIRE_MODE            0x20
+#define USBFS_UIE_FIFO_OV           0x10
+#define USBFS_UIE_HST_SOF           0x08
+#define USBFS_UIE_SUSPEND           0x04
+#define USBFS_UIE_TRANSFER          0x02
+#define USBFS_UIE_DETECT            0x01
+#define USBFS_UIE_BUS_RST           0x01
+
+/* R8_USB_DEV_AD */
+#define USBFS_UDA_GP_BIT            0x80
+#define USBFS_USB_ADDR_MASK         0x7F
+
+/* R8_USB_MIS_ST */
+#define USBFS_UMS_SOF_PRES          0x80
+#define USBFS_UMS_SOF_ACT           0x40
+#define USBFS_UMS_SIE_FREE          0x20
+#define USBFS_UMS_R_FIFO_RDY        0x10
+#define USBFS_UMS_BUS_RESET         0x08
+#define USBFS_UMS_SUSPEND           0x04
+#define USBFS_UMS_DM_LEVEL          0x02
+#define USBFS_UMS_DEV_ATTACH        0x01
+
+/* R8_USB_INT_FG */
+#define USBFS_U_IS_NAK              0x80    // RO, indicate current USB transfer is NAK received
+#define USBFS_U_TOG_OK              0x40    // RO, indicate current USB transfer toggle is OK
+#define USBFS_U_SIE_FREE            0x20    // RO, indicate USB SIE free status
+#define USBFS_UIF_FIFO_OV           0x10    // FIFO overflow interrupt flag for USB, direct bit address clear or write 1 to clear
+#define USBFS_UIF_HST_SOF           0x08    // host SOF timer interrupt flag for USB host, direct bit address clear or write 1 to clear
+#define USBFS_UIF_SUSPEND           0x04    // USB suspend or resume event interrupt flag, direct bit address clear or write 1 to clear
+#define USBFS_UIF_TRANSFER          0x02    // USB transfer completion interrupt flag, direct bit address clear or write 1 to clear
+#define USBFS_UIF_DETECT            0x01    // device detected event interrupt flag for USB host mode, direct bit address clear or write 1 to clear
+#define USBFS_UIF_BUS_RST           0x01    // bus reset event interrupt flag for USB device mode, direct bit address clear or write 1 to clear
+
+/* R8_USB_INT_ST */
+#define USBFS_UIS_IS_NAK            0x80      // RO, indicate current USB transfer is NAK received for USB device mode
+#define USBFS_UIS_TOG_OK            0x40      // RO, indicate current USB transfer toggle is OK
+#define USBFS_UIS_TOKEN_MASK        0x30      // RO, bit mask of current token PID code received for USB device mode
+#define USBFS_UIS_TOKEN_OUT         0x00
+#define USBFS_UIS_TOKEN_SOF         0x10
+#define USBFS_UIS_TOKEN_IN          0x20
+#define USBFS_UIS_TOKEN_SETUP       0x30
+// bUIS_TOKEN1 & bUIS_TOKEN0: current token PID code received for USB device mode
+//   00: OUT token PID received
+//   01: SOF token PID received
+//   10: IN token PID received
+//   11: SETUP token PID received
+#define USBFS_UIS_ENDP_MASK         0x0F      // RO, bit mask of current transfer endpoint number for USB device mode
+#define USBFS_UIS_H_RES_MASK        0x0F      // RO, bit mask of current transfer handshake response for USB host mode: 0000=no response, time out from device, others=handshake response PID received
+
+/* R32_USB_OTG_CR */
+#define USBFS_CR_SESS_VTH           0x20
+#define USBFS_CR_VBUS_VTH           0x10
+#define USBFS_CR_OTG_EN             0x08
+#define USBFS_CR_IDPU               0x04
+#define USBFS_CR_CHARGE_VBUS        0x02
+#define USBFS_CR_DISCHAR_VBUS       0x01
+
+/* R32_USB_OTG_SR */
+#define USBFS_SR_ID_DIG             0x08
+#define USBFS_SR_SESS_END           0x04
+#define USBFS_SR_SESS_VLD           0x02
+#define USBFS_SR_VBUS_VLD           0x01
+
+/* R8_UDEV_CTRL */
+#define USBFS_UD_PD_DIS             0x80      // disable USB UDP/UDM pulldown resistance: 0=enable pulldown, 1=disable
+#define USBFS_UD_DP_PIN             0x20      // ReadOnly: indicate current UDP pin level
+#define USBFS_UD_DM_PIN             0x10      // ReadOnly: indicate current UDM pin level
+#define USBFS_UD_LOW_SPEED          0x04      // enable USB physical port low speed: 0=full speed, 1=low speed
+#define USBFS_UD_GP_BIT             0x02      // general purpose bit
+#define USBFS_UD_PORT_EN            0x01      // enable USB physical port I/O: 0=disable, 1=enable
+
+/* R8_UEP4_1_MOD */
+#define USBFS_UEP1_RX_EN            0x80      // enable USB endpoint 1 receiving (OUT)
+#define USBFS_UEP1_TX_EN            0x40      // enable USB endpoint 1 transmittal (IN)
+#define USBFS_UEP1_BUF_MOD          0x10      // buffer mode of USB endpoint 1
+#define USBFS_UEP4_RX_EN            0x08      // enable USB endpoint 4 receiving (OUT)
+#define USBFS_UEP4_TX_EN            0x04      // enable USB endpoint 4 transmittal (IN)
+#define USBFS_UEP4_BUF_MOD          0x01
+
+/* R8_UEP2_3_MOD */
+#define USBFS_UEP3_RX_EN            0x80      // enable USB endpoint 3 receiving (OUT)
+#define USBFS_UEP3_TX_EN            0x40      // enable USB endpoint 3 transmittal (IN)
+#define USBFS_UEP3_BUF_MOD          0x10      // buffer mode of USB endpoint 3
+#define USBFS_UEP2_RX_EN            0x08      // enable USB endpoint 2 receiving (OUT)
+#define USBFS_UEP2_TX_EN            0x04      // enable USB endpoint 2 transmittal (IN)
+#define USBFS_UEP2_BUF_MOD          0x01      // buffer mode of USB endpoint 2
+
+/* R8_UEP5_6_MOD */
+#define USBFS_UEP6_RX_EN            0x80      // enable USB endpoint 6 receiving (OUT)
+#define USBFS_UEP6_TX_EN            0x40      // enable USB endpoint 6 transmittal (IN)
+#define USBFS_UEP6_BUF_MOD          0x10      // buffer mode of USB endpoint 6
+#define USBFS_UEP5_RX_EN            0x08      // enable USB endpoint 5 receiving (OUT)
+#define USBFS_UEP5_TX_EN            0x04      // enable USB endpoint 5 transmittal (IN)
+#define USBFS_UEP5_BUF_MOD          0x01      // buffer mode of USB endpoint 5
+
+/* R8_UEP7_MOD */
+#define USBFS_UEP7_RX_EN            0x08      // enable USB endpoint 7 receiving (OUT)
+#define USBFS_UEP7_TX_EN            0x04      // enable USB endpoint 7 transmittal (IN)
+#define USBFS_UEP7_BUF_MOD          0x01      // buffer mode of USB endpoint 7
+
+/* R8_UEPn_TX_CTRL */
+#define USBFS_UEP_T_AUTO_TOG        0x08      // enable automatic toggle after successful transfer completion on endpoint 1/2/3: 0=manual toggle, 1=automatic toggle
+#define USBFS_UEP_T_TOG             0x04      // prepared data toggle flag of USB endpoint X transmittal (IN): 0=DATA0, 1=DATA1
+#define USBFS_UEP_T_RES_MASK        0x03      // bit mask of handshake response type for USB endpoint X transmittal (IN)
+#define USBFS_UEP_T_RES_ACK         0x00
+#define USBFS_UEP_T_RES_NONE        0x01
+#define USBFS_UEP_T_RES_NAK         0x02
+#define USBFS_UEP_T_RES_STALL       0x03
+// bUEP_T_RES1 & bUEP_T_RES0: handshake response type for USB endpoint X transmittal (IN)
+//   00: DATA0 or DATA1 then expecting ACK (ready)
+//   01: DATA0 or DATA1 then expecting no response, time out from host, for non-zero endpoint isochronous transactions
+//   10: NAK (busy)
+//   11: STALL (error)
+// host aux setup
+
+/* R8_UEPn_RX_CTRL, n=0-7 */
+#define USBFS_UEP_R_AUTO_TOG        0x08      // enable automatic toggle after successful transfer completion on endpoint 1/2/3: 0=manual toggle, 1=automatic toggle
+#define USBFS_UEP_R_TOG             0x04      // expected data toggle flag of USB endpoint X receiving (OUT): 0=DATA0, 1=DATA1
+#define USBFS_UEP_R_RES_MASK        0x03      // bit mask of handshake response type for USB endpoint X receiving (OUT)
+#define USBFS_UEP_R_RES_ACK         0x00
+#define USBFS_UEP_R_RES_NONE        0x01
+#define USBFS_UEP_R_RES_NAK         0x02
+#define USBFS_UEP_R_RES_STALL       0x03
+// RB_UEP_R_RES1 & RB_UEP_R_RES0: handshake response type for USB endpoint X receiving (OUT)
+//   00: ACK (ready)
+//   01: no response, time out to host, for non-zero endpoint isochronous transactions
+//   10: NAK (busy)
+//   11: STALL (error)
+
+/* R8_UHOST_CTRL */
+#define USBFS_UH_PD_DIS             0x80      // disable USB UDP/UDM pulldown resistance: 0=enable pulldown, 1=disable
+#define USBFS_UH_DP_PIN             0x20      // ReadOnly: indicate current UDP pin level
+#define USBFS_UH_DM_PIN             0x10      // ReadOnly: indicate current UDM pin level
+#define USBFS_UH_LOW_SPEED          0x04      // enable USB port low speed: 0=full speed, 1=low speed
+#define USBFS_UH_BUS_RESET          0x02      // control USB bus reset: 0=normal, 1=force bus reset
+#define USBFS_UH_PORT_EN            0x01      // enable USB port: 0=disable, 1=enable port, automatic disabled if USB device detached
+
+/* R32_UH_EP_MOD */
+#define USBFS_UH_EP_TX_EN           0x40      // enable USB host OUT endpoint transmittal
+#define USBFS_UH_EP_TBUF_MOD        0x10      // buffer mode of USB host OUT endpoint
+// bUH_EP_TX_EN & bUH_EP_TBUF_MOD: USB host OUT endpoint buffer mode, buffer start address is UH_TX_DMA
+//   0 x:  disable endpoint and disable buffer
+//   1 0:  64 bytes buffer for transmittal (OUT endpoint)
+//   1 1:  dual 64 bytes buffer by toggle bit bUH_T_TOG selection for transmittal (OUT endpoint), total=128bytes
+#define USBFS_UH_EP_RX_EN           0x08      // enable USB host IN endpoint receiving
+#define USBFS_UH_EP_RBUF_MOD        0x01      // buffer mode of USB host IN endpoint
+// bUH_EP_RX_EN & bUH_EP_RBUF_MOD: USB host IN endpoint buffer mode, buffer start address is UH_RX_DMA
+//   0 x:  disable endpoint and disable buffer
+//   1 0:  64 bytes buffer for receiving (IN endpoint)
+//   1 1:  dual 64 bytes buffer by toggle bit bUH_R_TOG selection for receiving (IN endpoint), total=128bytes
+
+/* R16_UH_SETUP */
+#define USBFS_UH_PRE_PID_EN         0x0400      // USB host PRE PID enable for low speed device via hub
+#define USBFS_UH_SOF_EN             0x0004      // USB host automatic SOF enable
+
+/* R8_UH_EP_PID */
+#define USBFS_UH_TOKEN_MASK         0xF0      // bit mask of token PID for USB host transfer
+#define USBFS_UH_ENDP_MASK          0x0F      // bit mask of endpoint number for USB host transfer
+
+/* R8_UH_RX_CTRL */
+#define USBFS_UH_R_AUTO_TOG         0x08      // enable automatic toggle after successful transfer completion: 0=manual toggle, 1=automatic toggle
+#define USBFS_UH_R_TOG              0x04      // expected data toggle flag of host receiving (IN): 0=DATA0, 1=DATA1
+#define USBFS_UH_R_RES              0x01      // prepared handshake response type for host receiving (IN): 0=ACK (ready), 1=no response, time out to device, for isochronous transactions
+
+/* R8_UH_TX_CTRL */
+#define USBFS_UH_T_AUTO_TOG         0x08      // enable automatic toggle after successful transfer completion: 0=manual toggle, 1=automatic toggle
+#define USBFS_UH_T_TOG              0x04      // prepared data toggle flag of host transmittal (SETUP/OUT): 0=DATA0, 1=DATA1
+#define USBFS_UH_T_RES              0x01      // expected handshake response type for host transmittal (SETUP/OUT): 0=ACK (ready), 1=no response, time out from device, for isochronous transactions
+
+#endif
+
 /* ch32v00x_wwdg.h -----------------------------------------------------------*/
 
 
@@ -11728,6 +12806,7 @@ typedef volatile unsigned long *PUINT32V;
 	
 ///////////////////////////////////////////////////////////////////////////////////////////////	
 ///////////////////////////////////////////////////////////////////////////////////////////////
+// Code in this section was originally from __CORE_RISCV_H__
 
 #ifndef __CORE_RISCV_H__
 #define __CORE_RISCV_H__
@@ -11750,6 +12829,7 @@ typedef volatile unsigned long *PUINT32V;
   #define __INLINE    inline  /*!< inline keyword for TASKING Compiler   */
 
 #endif
+
 
 #ifdef __cplusplus
  extern "C" {
@@ -11836,59 +12916,15 @@ typedef struct{
     __IO uint32_t SCTLR;
 }PFIC_Type;
 
-#if defined (CH32V003) 
-
-/* memory mapped structure for SysTick */
-typedef struct
-{
-    __IO uint32_t CTLR;
-    __IO uint32_t SR;
-    __IO uint32_t CNT;
-    uint32_t RESERVED0;
-    __IO uint32_t CMP;
-    uint32_t RESERVED1;
-} SysTick_Type;
-
-#elif defined(CH32V20x) || defined(CH32V30x)
-
-/* memory mapped structure for SysTick */
-typedef struct
-{
-	__IO uint32_t CTLR;
-	__IO uint32_t SR;
-	__IO uint64_t CNT;
-	__IO uint64_t CMP;
-} SysTick_Type;
-
-#elif defined(CH32X03x)
-
-/* memory mapped structure for SysTick */
-typedef struct
-{
-  __IO uint32_t CTLR;
-  __IO uint32_t SR;
-  __IO uint32_t CNTL;
-  __IO uint32_t CNTH;
-  __IO uint32_t CMPL;
-  __IO uint32_t CMPH;
-} SysTick_Type;
-
-#elif defined(CH32V10x)
-
-/* memory mapped structure for SysTick */
-typedef struct
-{
-  __IO uint32_t CTLR;
-  __IO uint32_t CNTL;
-  __IO uint32_t CNTH;
-  __IO uint32_t CMPL;
-  __IO uint32_t CMPH;
-} SysTick_Type;
-
 #endif
 
-
-#endif
+/* some bit definitions for systick regs */
+#define SYSTICK_SR_CNTIF (1<<0)
+#define SYSTICK_CTLR_STE (1<<0)
+#define SYSTICK_CTLR_STIE (1<<1)
+#define SYSTICK_CTLR_STCLK (1<<2)
+#define SYSTICK_CTLR_STRE (1<<3)
+#define SYSTICK_CTLR_SWIE (1<<31)
 
 #define PFIC            ((PFIC_Type *) PFIC_BASE )
 #define NVIC            PFIC
@@ -11910,49 +12946,45 @@ typedef struct
  */
 RV_STATIC_INLINE void __enable_irq()
 {
-  uint32_t result;
+	uint32_t result;
 
-    __asm volatile(
+	__ASM volatile(
 #if __GNUC__ > 10
 		".option arch, +zicsr\n"
 #endif
 		"csrr %0," "mstatus": "=r"(result));
-  result |= 0x88;
-  __asm volatile ("csrw mstatus, %0" : : "r" (result) );
+	result |= 0x88;
+	__ASM volatile ("csrw mstatus, %0" : : "r" (result) );
 }
 
 /*********************************************************************
  * @fn      __disable_irq
- *
  * @brief   Disable Global Interrupt
- *
  * @return  none
  */
 RV_STATIC_INLINE void __disable_irq()
 {
-  uint32_t result;
+	uint32_t result;
 
-    __asm volatile(
+    __ASM volatile(
 #if __GNUC__ > 10
 		".option arch, +zicsr\n"
 #endif
 		"csrr %0," "mstatus": "=r"(result));
-  result &= ~0x88;
-  __asm volatile ("csrw mstatus, %0" : : "r" (result) );
+	result &= ~0x88;
+	__ASM volatile ("csrw mstatus, %0" : : "r" (result) );
 }
 
 /*********************************************************************
  * @fn      __isenabled_irq
- *
  * @brief   Is Global Interrupt enabled
- *
  * @return  1: yes, 0: no
  */
 RV_STATIC_INLINE uint8_t __isenabled_irq(void)
 {
     uint32_t result;
 
-    __asm volatile(
+    __ASM volatile(
 #if __GNUC__ > 10
     ".option arch, +zicsr\n"
 #endif
@@ -11962,135 +12994,109 @@ RV_STATIC_INLINE uint8_t __isenabled_irq(void)
 
 /*********************************************************************
  * @fn      __get_cpu_sp
- *
  * @brief   Get stack pointer
- *
  * @return  stack pointer
  */
 RV_STATIC_INLINE uint32_t __get_cpu_sp(void);
 RV_STATIC_INLINE uint32_t __get_cpu_sp(void)
 {
-  uint32_t result;
+	uint32_t result;
 
-  __asm volatile(
+	__ASM volatile(
 #if __GNUC__ > 10
     ".option arch, +zicsr\n"
 #endif
-  "mv %0, sp" : "=r"(result));
-  return result;
+	"mv %0, sp" : "=r"(result));
+	return result;
 }
 
 /*********************************************************************
  * @fn      __NOP
- *
  * @brief   nop
- *
  * @return  none
  */
 RV_STATIC_INLINE void __NOP()
 {
-  __asm volatile ("nop");
+	__ASM volatile ("nop");
 }
 
 /*********************************************************************
  * @fn       NVIC_EnableIRQ
- *
  * @brief   Disable Interrupt
- *
  * @param   IRQn - Interrupt Numbers
- *
  * @return  none
  */
 RV_STATIC_INLINE void NVIC_EnableIRQ(IRQn_Type IRQn)
 {
-  NVIC->IENR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
+	NVIC->IENR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
 }
 
 /*********************************************************************
  * @fn       NVIC_DisableIRQ
- *
  * @brief   Disable Interrupt
- *
  * @param   IRQn - Interrupt Numbers
- *
  * @return  none
  */
 RV_STATIC_INLINE void NVIC_DisableIRQ(IRQn_Type IRQn)
 {
-  NVIC->IRER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
+	NVIC->IRER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
 }
 
 /*********************************************************************
  * @fn       NVIC_GetStatusIRQ
- *
  * @brief   Get Interrupt Enable State
- *
  * @param   IRQn - Interrupt Numbers
- *
  * @return  1 - 1: Interrupt Pending Enable
  *                0 - Interrupt Pending Disable
  */
 RV_STATIC_INLINE uint32_t NVIC_GetStatusIRQ(IRQn_Type IRQn)
 {
-  return((uint32_t) ((NVIC->ISR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0));
+	return((uint32_t) ((NVIC->ISR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0));
 }
 
 /*********************************************************************
  * @fn      NVIC_GetPendingIRQ
- *
  * @brief   Get Interrupt Pending State
- *
  * @param   IRQn - Interrupt Numbers
- *
  * @return  1 - 1: Interrupt Pending Enable
  *                0 - Interrupt Pending Disable
  */
 RV_STATIC_INLINE uint32_t NVIC_GetPendingIRQ(IRQn_Type IRQn)
 {
-  return((uint32_t) ((NVIC->IPR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0));
+	return((uint32_t) ((NVIC->IPR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0));
 }
 
 /*********************************************************************
  * @fn      NVIC_SetPendingIRQ
- *
  * @brief   Set Interrupt Pending
- *
  * @param   IRQn - Interrupt Numbers
- *
  * @return  none
  */
 RV_STATIC_INLINE void NVIC_SetPendingIRQ(IRQn_Type IRQn)
 {
-  NVIC->IPSR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
+	NVIC->IPSR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
 }
 
 /*********************************************************************
  * @fn      NVIC_ClearPendingIRQ
- *
  * @brief   Clear Interrupt Pending
- *
  * @param   IRQn - Interrupt Numbers
- *
  * @return  none
  */
 RV_STATIC_INLINE void NVIC_ClearPendingIRQ(IRQn_Type IRQn)
 {
-  NVIC->IPRR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
+	NVIC->IPRR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
 }
 
 /*********************************************************************
  * @fn      NVIC_GetActive
- *
  * @brief   Get Interrupt Active State
- *
  * @param   IRQn - Interrupt Numbers
- *
  * @return  1 - Interrupt Active
- *                0 - Interrupt No Active
  */
 RV_STATIC_INLINE uint32_t NVIC_GetActive(IRQn_Type IRQn)
 {
-  return((uint32_t)((NVIC->IACTR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0));
+	return((uint32_t)((NVIC->IACTR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0));
 }
 
 /*********************************************************************
@@ -12107,7 +13113,7 @@ RV_STATIC_INLINE uint32_t NVIC_GetActive(IRQn_Type IRQn)
  */
 RV_STATIC_INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint8_t priority)
 {
-  NVIC->IPRIOR[(uint32_t)(IRQn)] = priority;
+	NVIC->IPRIOR[(uint32_t)(IRQn)] = priority;
 }
 
 /*********************************************************************
@@ -12153,22 +13159,18 @@ RV_STATIC_INLINE void NVIC_restore_IRQs(uint32_t old_state)
 
 /*********************************************************************
  * @fn       __WFI
- *
  * @brief   Wait for Interrupt
- *
  * @return  none
  */
 __attribute__( ( always_inline ) ) RV_STATIC_INLINE void __WFI(void)
 {
-  NVIC->SCTLR &= ~(1<<3);   // wfi
-  asm volatile ("wfi");
+	NVIC->SCTLR &= ~(1<<3);   // wfi
+	__ASM volatile ("wfi");
 }
 
 /*********************************************************************
  * @fn       __WFE
- *
  * @brief   Wait for Events
- *
  * @return  none
  */
 __attribute__( ( always_inline ) ) RV_STATIC_INLINE void __WFE(void)
@@ -12178,15 +13180,13 @@ __attribute__( ( always_inline ) ) RV_STATIC_INLINE void __WFE(void)
   t = NVIC->SCTLR;
   NVIC->SCTLR |= (1<<3)|(1<<5);     // (wfi->wfe)+(__sev)
   NVIC->SCTLR = (NVIC->SCTLR & ~(1<<5)) | ( t & (1<<5));
-  asm volatile ("wfi");
-  asm volatile ("wfi");
+  __ASM volatile ("wfi");
+  __ASM volatile ("wfi");
 }
 
 /*********************************************************************
  * @fn      SetVTFIRQ
- *
  * @brief   Set VTF Interrupt
- *
  * @param   addr - VTF interrupt service function base address.
  *                  IRQn - Interrupt Numbers
  *                  num - VTF Interrupt Numbers
@@ -12195,24 +13195,22 @@ __attribute__( ( always_inline ) ) RV_STATIC_INLINE void __WFE(void)
  * @return  none
  */
 RV_STATIC_INLINE void SetVTFIRQ(uint32_t addr, IRQn_Type IRQn, uint8_t num, FunctionalState NewState){
-  if(num > 1)  return ;
+	if(num > 1)  return ;
 
-  if (NewState != DISABLE)
-  {
-      NVIC->VTFIDR[num] = IRQn;
-      NVIC->VTFADDR[num] = ((addr&0xFFFFFFFE)|0x1);
-  }
-  else{
-      NVIC->VTFIDR[num] = IRQn;
-      NVIC->VTFADDR[num] = ((addr&0xFFFFFFFE)&(~0x1));
-  }
+	if (NewState != DISABLE)
+	{
+		NVIC->VTFIDR[num] = IRQn;
+		NVIC->VTFADDR[num] = ((addr&0xFFFFFFFE)|0x1);
+	}
+	else{
+		NVIC->VTFIDR[num] = IRQn;
+		NVIC->VTFADDR[num] = ((addr&0xFFFFFFFE)&(~0x1));
+	}
 }
 
 /*********************************************************************
  * @fn       NVIC_SystemReset
- *
  * @brief   Initiate a system reset request
- *
  * @return  none
  */
 RV_STATIC_INLINE void NVIC_SystemReset(void)
@@ -12223,14 +13221,14 @@ RV_STATIC_INLINE void NVIC_SystemReset(void)
 // For configuring INTSYSCR, for interrupt nesting + hardware stack enable.
 static inline uint32_t __get_INTSYSCR(void)
 {
-    uint32_t result;
-    asm volatile("csrr %0, 0x804": "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile("csrr %0, 0x804": "=r"(result));
+	return (result);
 }
 
 static inline void __set_INTSYSCR( uint32_t value )
 {
-    asm volatile("csrw 0x804, %0" : : "r"(value));
+    __ASM volatile("csrw 0x804, %0" : : "r"(value));
 }
 
 #if defined(CH32V30x)
@@ -12243,141 +13241,114 @@ static inline void __set_INTSYSCR( uint32_t value )
  */
 static inline uint32_t __get_FFLAGS(void)
 {
-  uint32_t result;
-
-  __ASM volatile ( "csrr %0," "fflags" : "=r" (result) );
-  return (result);
+	uint32_t result;
+	__ASM volatile ( "csrr %0," "fflags" : "=r" (result) );
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __set_FFLAGS
- *
  * @brief   Set the Floating-Point Accrued Exceptions
- *
  * @param   value  - set FFLAGS value
- *
  * @return  none
  */
 static inline void __set_FFLAGS(uint32_t value)
 {
-  __ASM volatile ("csrw fflags, %0" : : "r" (value) );
+	__ASM volatile ("csrw fflags, %0" : : "r" (value) );
 }
 
 /*********************************************************************
  * @fn      __get_FRM
- *
  * @brief   Return the Floating-Point Dynamic Rounding Mode
- *
  * @return  frm value
  */
 static inline uint32_t __get_FRM(void)
 {
-  uint32_t result;
-
-  __ASM volatile ( "csrr %0," "frm" : "=r" (result) );
-  return (result);
+	uint32_t result;
+	__ASM volatile ( "csrr %0," "frm" : "=r" (result) );
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __set_FRM
- *
  * @brief   Set the Floating-Point Dynamic Rounding Mode
- *
  * @param   value  - set frm value
- *
  * @return  none
  */
 static inline void __set_FRM(uint32_t value)
 {
-  __ASM volatile ("csrw frm, %0" : : "r" (value) );
+	__ASM volatile ("csrw frm, %0" : : "r" (value) );
 }
 
 /*********************************************************************
  * @fn      __get_FCSR
- *
  * @brief   Return the Floating-Point Control and Status Register
- *
  * @return  fcsr value
  */
 static inline uint32_t __get_FCSR(void)
 {
-  uint32_t result;
-
-  __ASM volatile ( "csrr %0," "fcsr" : "=r" (result) );
-  return (result);
+	uint32_t result;
+	__ASM volatile ( "csrr %0," "fcsr" : "=r" (result) );
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __set_FCSR
- *
  * @brief   Set the Floating-Point Dynamic Rounding Mode
- *
  * @param   value  - set fcsr value
- *
  * @return  none
  */
 static inline void __set_FCSR(uint32_t value)
 {
-  __ASM volatile ("csrw fcsr, %0" : : "r" (value) );
+	__ASM volatile ("csrw fcsr, %0" : : "r" (value) );
 }
-#endif
+
+#endif // CH32V30x
 
 /*********************************************************************
  * @fn      __get_MSTATUS
- *
  * @brief   Return the Machine Status Register
- *
  * @return  mstatus value
  */
 static inline uint32_t __get_MSTATUS(void)
 {
-    uint32_t result;
-
-    __ASM volatile("csrr %0," "mstatus": "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile("csrr %0," "mstatus": "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __set_MSTATUS
- *
  * @brief   Set the Machine Status Register
- *
  * @param   value  - set mstatus value
- *
  * @return  none
  */
 static inline void __set_MSTATUS(uint32_t value)
 {
-    __ASM volatile("csrw mstatus, %0" : : "r"(value));
+	__ASM volatile("csrw mstatus, %0" : : "r"(value));
 }
 
 /*********************************************************************
  * @fn      __get_MISA
- *
  * @brief   Return the Machine ISA Register
- *
  * @return  misa value
  */
 static inline uint32_t __get_MISA(void)
 {
-    uint32_t result;
-
-    __ASM volatile("csrr %0,""misa" : "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile("csrr %0,""misa" : "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __set_MISA
- *
  * @brief   Set the Machine ISA Register
- *
  * @param   value  - set misa value
- *
  * @return  none
  */
 static inline void __set_MISA(uint32_t value)
 {
-    __ASM volatile("csrw misa, %0" : : "r"(value));
+	__ASM volatile("csrw misa, %0" : : "r"(value));
 }
 
 /*********************************************************************
@@ -12389,116 +13360,94 @@ static inline void __set_MISA(uint32_t value)
  */
 static inline uint32_t __get_MTVEC(void)
 {
-    uint32_t result;
-
-    __ASM volatile("csrr %0," "mtvec": "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile("csrr %0," "mtvec": "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __set_MTVEC
- *
  * @brief   Set the Machine Trap-Vector Base-Address Register
- *
  * @param   value  - set mtvec value
- *
  * @return  none
  */
 static inline void __set_MTVEC(uint32_t value)
 {
-    __ASM volatile("csrw mtvec, %0":: "r"(value));
+	__ASM volatile("csrw mtvec, %0":: "r"(value));
 }
 
 /*********************************************************************
  * @fn      __get_MSCRATCH
- *
  * @brief   Return the Machine Seratch Register
- *
  * @return  mscratch value
  */
 static inline uint32_t __get_MSCRATCH(void)
 {
-    uint32_t result;
-
-    __ASM volatile("csrr %0," "mscratch" : "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile("csrr %0," "mscratch" : "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __set_MSCRATCH
- *
  * @brief   Set the Machine Seratch Register
- *
  * @param   value  - set mscratch value
- *
  * @return  none
  */
 static inline void __set_MSCRATCH(uint32_t value)
 {
-    __ASM volatile("csrw mscratch, %0" : : "r"(value));
+	__ASM volatile("csrw mscratch, %0" : : "r"(value));
 }
 
 /*********************************************************************
  * @fn      __get_MEPC
- *
  * @brief   Return the Machine Exception Program Register
- *
  * @return  mepc value
  */
 static inline uint32_t __get_MEPC(void)
 {
     uint32_t result;
 
-    __ASM volatile("csrr %0," "mepc" : "=r"(result));
+	__ASM volatile("csrr %0," "mepc" : "=r"(result));
     return (result);
 }
 
 /*********************************************************************
  * @fn      __set_MEPC
- *
  * @brief   Set the Machine Exception Program Register
- *
  * @return  mepc value
  */
 static inline void __set_MEPC(uint32_t value)
 {
-    __ASM volatile("csrw mepc, %0" : : "r"(value));
+	__ASM volatile("csrw mepc, %0" : : "r"(value));
 }
 
 /*********************************************************************
  * @fn      __get_MCAUSE
- *
  * @brief   Return the Machine Cause Register
- *
  * @return  mcause value
  */
 static inline uint32_t __get_MCAUSE(void)
 {
     uint32_t result;
 
-    __ASM volatile("csrr %0," "mcause": "=r"(result));
+	__ASM volatile("csrr %0," "mcause": "=r"(result));
     return (result);
 }
 
 /*********************************************************************
  * @fn      __set_MCAUSE
- *
  * @brief   Set the Machine Cause Register
- *
  * @return  mcause value
  */
 static inline void __set_MCAUSE(uint32_t value)
 {
-    __ASM volatile("csrw mcause, %0":: "r"(value));
+	__ASM volatile("csrw mcause, %0":: "r"(value));
 }
-
-#if defined(CH32V10x) || defined(CH32V20x) || defined(CH32V30x)
 
 /*********************************************************************
  * @fn      __get_MTVAL
- *
  * @brief   Return the Machine Trap Value Register
- *
  * @return  mtval value
  */
 static inline uint32_t __get_MTVAL(void)
@@ -12511,9 +13460,7 @@ static inline uint32_t __get_MTVAL(void)
 
 /*********************************************************************
  * @fn      __set_MTVAL
- *
  * @brief   Set the Machine Trap Value Register
- *
  * @return  mtval value
  */
 static inline void __set_MTVAL(uint32_t value)
@@ -12521,94 +13468,66 @@ static inline void __set_MTVAL(uint32_t value)
 	__ASM volatile ("csrw mtval, %0" : : "r" (value) );
 }
 
-#endif
-
 /*********************************************************************
  * @fn      __get_MVENDORID
- *
  * @brief   Return Vendor ID Register
- *
  * @return  mvendorid value
  */
 static inline uint32_t __get_MVENDORID(void)
 {
-    uint32_t result;
-
-    __ASM volatile("csrr %0,""mvendorid": "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile("csrr %0,""mvendorid": "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __get_MARCHID
- *
  * @brief   Return Machine Architecture ID Register
- *
  * @return  marchid value
  */
 static inline uint32_t __get_MARCHID(void)
 {
-    uint32_t result;
+	uint32_t result;
 
-    __ASM volatile("csrr %0,""marchid": "=r"(result));
-    return (result);
+	__ASM volatile("csrr %0,""marchid": "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __get_MIMPID
- *
  * @brief   Return Machine Implementation ID Register
- *
  * @return  mimpid value
  */
 static inline uint32_t __get_MIMPID(void)
 {
-    uint32_t result;
-
-    __ASM volatile("csrr %0,""mimpid": "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile("csrr %0,""mimpid": "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __get_MHARTID
- *
  * @brief   Return Hart ID Register
- *
  * @return  mhartid value
  */
 static inline uint32_t __get_MHARTID(void)
 {
-    uint32_t result;
-
-    __ASM volatile("csrr %0,""mhartid": "=r"(result));
-    return (result);
+	uint32_t result;
+	__ASM volatile("csrr %0,""mhartid": "=r"(result));
+	return (result);
 }
 
 /*********************************************************************
  * @fn      __get_SP
- *
  * @brief   Return SP Register
- *
  * @return  SP value
  */
 static inline uint32_t __get_SP(void)
 {
-    uint32_t result;
-
-    __ASM volatile("mv %0,""sp": "=r"(result):);
-    return (result);
+	uint32_t result;
+	__ASM volatile("mv %0,""sp": "=r"(result):);
+	return (result);
 }
-
-// Depending on a LOT of factors, it's about 6 cycles per n.
-// **DO NOT send it zero or less.**
-#ifndef __MACOSX__
-static inline void Delay_Tiny( int n ) {
-	asm volatile( "\
-		mv a5, %[n]\n\
-		1: \
-		c.addi a5, -1\n\
-		c.bnez a5, 1b" : : [n]"r"(n) : "a5" );
-}
-#endif
 
 #endif
 
@@ -12851,6 +13770,23 @@ void DefaultIRQHandler( void ) __attribute__((section(".text.vector_handler"))) 
 
 void DelaySysTick( uint32_t n );
 
+
+// Depending on a LOT of factors, it's about 6 cycles per n.
+// **DO NOT send it zero or less.**
+#ifndef __MACOSX__
+#ifndef __DELAY_TINY_DEFINED__
+#define __DELAY_TINY_DEFINED__
+static inline void Delay_Tiny( int n ) {
+	__ASM volatile( "\
+		mv a5, %[n]\n\
+		1: \
+		c.addi a5, -1\n\
+		c.bnez a5, 1b" : : [n]"r"(n) : "a5" );
+}
+#endif
+#endif
+
+
 // Tricky: We need to make sure main and SystemInit() are preserved.
 int main() __attribute__((used));
 void SystemInit(void);
@@ -12945,19 +13881,39 @@ Examples:
 
 #endif
 
-/* Copyright notice from original EVT.
- ********************************** (C) COPYRIGHT  *******************************
- * File Name          : core_riscv.h + ch32v00x.h
- * Author             : WCH
- * Version            : V1.0.0
- * Date               : 2022/08/08
- * Description        : RISC-V Core Peripheral Access Layer Header File
- *********************************************************************************
+/*
+ * This file contains various parts of the official WCH EVT Headers which
+ * were originally under a restrictive license.
+ * 
+ * The collection of this file was generated by cnlohr, 2023-02-18 and
+ * AlexanderMandera, 2023-06-23
+ *
+ * While originally under a restrictive copyright, WCH has approved use
+ * under MIT-licensed use, because of inclusion in Zephyr, as well as other
+ * open-source licensed projects.
+ *
+ * These copies of the headers from WCH are available now under:
+ *
  * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
- * Attention: This software (modified or not) and binary are used for
- * microcontroller manufactured by Nanjing Qinheng Microelectronics.
- *******************************************************************************/
-
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the “Software”), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ */
 
 #ifdef __cplusplus
 };

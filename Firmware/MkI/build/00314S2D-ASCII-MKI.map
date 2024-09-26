@@ -4,11 +4,11 @@ build/00314S2D-ASCII-MKI.elf:     file format elf32-littleriscv
 SYMBOL TABLE:
 00000000 l    d  .init	00000000 .init
 000000a0 l    d  .text	00000000 .text
-000004b8 l    d  .fini	00000000 .fini
+000004fc l    d  .fini	00000000 .fini
 20000000 l    d  .dalign	00000000 .dalign
-000004b8 l    d  .dlalign	00000000 .dlalign
+000004fc l    d  .dlalign	00000000 .dlalign
 20000000 l    d  .data	00000000 .data
-20000004 l    d  .bss	00000000 .bss
+20000008 l    d  .bss	00000000 .bss
 00000000 l    d  .riscv.attributes	00000000 .riscv.attributes
 00000000 l    d  .debug_info	00000000 .debug_info
 00000000 l    d  .debug_abbrev	00000000 .debug_abbrev
@@ -20,22 +20,25 @@ SYMBOL TABLE:
 00000000 l    d  .debug_line_str	00000000 .debug_line_str
 00000000 l    d  .debug_frame	00000000 .debug_frame
 0000011e l     F .text	00000046 gpio_set_mode.constprop.0
-0000046c l     O .text	00000010 GPIO_PORT_MAP
-000003f6 l     F .text	00000074 USART1_IRQHandler
-0000047c l     O .text	0000003c segment_pin
-20000018 l     O .bss	00000040 g_uart_ring_buffer
-20000008 l     O .bss	00000010 _uart_rx_buffer
+000004b0 l     O .text	00000010 GPIO_PORT_MAP
+0000040e l     F .text	00000032 SysTick_Handler
+00000440 l     F .text	00000070 USART1_IRQHandler
+20000010 l     O .bss	00000004 g_systick_millis
+000004c0 l     O .text	0000003c segment_pin
+20000014 l     O .bss	00000010 _uart_rx_buffer
 20000000 l     O .data	00000004 g_seg_data
-20000004 l     O .bss	00000001 digit_state.0
+2000000c l     O .bss	00000004 disp_last_refresh.1
+20000008 l     O .bss	00000001 digit_state.0
 00000000 l    df *ABS*	00000000 div.o
 20000800 g       .data	00000000 __global_pointer$
 000001d2 g     F .text	00000002 TIM1_CC_IRQHandler
+00001278  w      .debug_info	00000000 .hidden ch32v003fun.c.bbf629ef
 000001d2 g     F .text	00000002 HardFault_Handler
-000001d2 g     F .text	00000002 SysTick_Handler
+000020a4  w      .debug_info	00000000 .hidden g00314S2D_ASCII_MKI.c.15288b2b
 000001d2 g     F .text	00000002 PVD_IRQHandler
 000001d4 g     F .text	0000000e NMI_Handler
 00000000 g     F .init	0000009c InterruptVectorDefault
-20000004 g       .bss	00000000 _sbss
+20000008 g       .bss	00000000 _sbss
 00000000 g     F .init	0000009c InterruptVector
 000000a8 g     F .text	0000002c .hidden __hidden___udivsi3
 000000a8 g     F .text	0000002c .hidden __udivsi3
@@ -45,20 +48,19 @@ SYMBOL TABLE:
 000001d2 g     F .text	00000002 EXTI7_0_IRQHandler
 000001d2 g     F .text	00000002 DMA1_Channel4_IRQHandler
 000001d2 g     F .text	00000002 ADC1_IRQHandler
-20000058 g       .bss	00000000 _ebss
+20000024 g       .bss	00000000 _ebss
 000001d2 g     F .text	00000002 DMA1_Channel7_IRQHandler
+0000305b  w      .debug_info	00000000 .hidden lib_uart.c.a081860e
 000000d4 g     F .text	00000008 .hidden __umodsi3
 000001d2 g     F .text	00000002 I2C1_EV_IRQHandler
 000001d2 g     F .text	00000002 DMA1_Channel6_IRQHandler
 000001d2 g     F .text	00000002 RCC_IRQHandler
 000001d2 g     F .text	00000002 TIM1_TRG_COM_IRQHandler
 000001d2 g     F .text	00000002 DMA1_Channel1_IRQHandler
-00002b69  w      .debug_info	00000000 .hidden lib_uart.c.58853775
 000001d2 g     F .text	00000002 DefaultIRQHandler
 20000000 g       .dalign	00000000 _data_vma
 000001d4 g     F .text	0000000e NMI_RCC_CSS_IRQHandler
-00001f5f  w      .debug_info	00000000 .hidden g00314S2D_ASCII_MKI.c.42ed5374
-00000236 g     F .text	000001c0 main
+00000236 g     F .text	000001d8 main
 000001d2 g     F .text	00000002 DMA1_Channel5_IRQHandler
 000000a0 g     F .text	00000058 .hidden __divsi3
 000001e2 g     F .text	00000054 SystemInit
@@ -70,14 +72,13 @@ SYMBOL TABLE:
 20000800 g       .bss	00000000 _eusrstack
 000001d2 g     F .text	00000002 SW_Handler
 000001d2 g     F .text	00000002 TIM1_BRK_IRQHandler
-20000004 g       .data	00000000 _edata
-000004b8 g       .dlalign	00000000 _data_lma
+20000008 g       .data	00000000 _edata
+000004fc g       .dlalign	00000000 _data_lma
 000000f8 g     F .text	00000024 .hidden __modsi3
 000001d2 g     F .text	00000002 DMA1_Channel2_IRQHandler
 00000164 g     F .text	0000006e handle_reset
 000001d2 g     F .text	00000002 FLASH_IRQHandler
 000001d2 g     F .text	00000002 I2C1_ER_IRQHandler
-00002541  w      .debug_info	00000000 .hidden lib_gpioctrl.c.e4f3fe8f
-00001189  w      .debug_info	00000000 .hidden ch32v003fun.c.2242770e
+00002a33  w      .debug_info	00000000 .hidden lib_gpioctrl.c.e4f3fe8f
 
 

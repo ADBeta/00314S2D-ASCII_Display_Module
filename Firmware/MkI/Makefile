@@ -25,7 +25,7 @@ MCU_C := $(TOOLKIT_DIR)/ch32v003fun.c
 
 GENERATED_LD_FILE := $(BUILD_DIR)/generated_ch32v003.ld
 #TARGET_MCU_LD := 0
-LDFLAGS := -L$(TOOLKIT_DIR) -lgcc -T $(GENERATED_LD_FILE) -Wl,--gc-sections
+LDFLAGS := -L$(TOOLKIT_DIR) -lgcc -T $(GENERATED_LD_FILE) -Wl,--gc-sections,--print-memory-usage
 
 # All .c files to compile, just adds ch32v003_fun, target and extra files
 FILES_TO_COMPILE := $(MCU_C) $(SRC_DIR)/$(TARGET).c $(TARGET_SOURCE_FILES)
@@ -68,7 +68,6 @@ $(BUILD_DIR)/$(TARGET).elf: $(FILES_TO_COMPILE) $(GENERATED_LD_FILE) $(EXTRA_ELF
 	
 # Create the binary file and hex from the .elf file
 $(BUILD_DIR)/$(TARGET).bin: $(BUILD_DIR)/$(TARGET).elf
-	$(PREFIX)-size $(BUILD_DIR)/$(TARGET).elf
 	$(PREFIX)-objdump -S $^ > $(BUILD_DIR)/$(TARGET).lst
 	$(PREFIX)-objdump -t $^ > $(BUILD_DIR)/$(TARGET).map
 	$(PREFIX)-objcopy -O binary $< $(BUILD_DIR)/$(TARGET).bin
@@ -103,5 +102,3 @@ flash: $(BUILD_DIR)/$(TARGET).bin
 
 clean:
 	rm -rf $(BUILD_DIR)
-
-

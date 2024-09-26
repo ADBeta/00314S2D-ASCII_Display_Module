@@ -1,7 +1,6 @@
 /******************************************************************************
-*
-*
-*
+* 14 Segment LED Display ASCII Font and control bytes enum
+* ADBeta (c) 2024
 ******************************************************************************/
 
 /// @brief An enum table of all ASCII Control Bytes
@@ -11,7 +10,7 @@
 /// @brief A font map for a 14 Segment LED Display.
 /// Assuming bit[15] is Segment A, and bit[0] is Segment M.
 /// ASCII Mapping, Ignoring 0x00 to 0x1F as control bytes (See above)
-const uint16_t ascii_font[] = {
+static const uint16_t ascii_font[] = {
 	0x0000,    // Space
 	0x4006,    // !
 	0x0202,    // "
@@ -52,7 +51,7 @@ const uint16_t ascii_font[] = {
 	0x0079,    // E
 	0x0071,    // F
 	0x00BD,    // G
-	0x00F4,    // H
+	0x00F6,    // H
 	0x1209,    // I
 	0x001E,    // J
 	0x0C70,    // K
@@ -106,5 +105,5 @@ const uint16_t ascii_font[] = {
 	0x2149,    // {
 	0x1200,    // |
 	0x0C89,    // }
-	0x24C0     // ~
+	0x24C0,    // ~
 };
