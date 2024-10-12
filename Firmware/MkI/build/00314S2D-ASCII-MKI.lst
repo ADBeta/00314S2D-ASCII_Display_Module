@@ -11,663 +11,590 @@ Disassembly of section .init:
 void InterruptVectorDefault()
 {
 	asm volatile( "\n\
-   0:	1640006f          	j	164 <handle_reset>
+   0:	0e60006f          	j	e6 <handle_reset>
    4:	00000000          	.word	0x00000000
-   8:	000001d4          	.word	0x000001d4
-   c:	000001d2          	.word	0x000001d2
+   8:	0000015e          	.word	0x0000015e
+   c:	0000015c          	.word	0x0000015c
 	...
-  30:	0000040e          	.word	0x0000040e
+  30:	00000388          	.word	0x00000388
   34:	00000000          	.word	0x00000000
-  38:	000001d2          	.word	0x000001d2
+  38:	0000015c          	.word	0x0000015c
   3c:	00000000          	.word	0x00000000
-  40:	000001d2          	.word	0x000001d2
-  44:	000001d2          	.word	0x000001d2
-  48:	000001d2          	.word	0x000001d2
-  4c:	000001d2          	.word	0x000001d2
-  50:	000001d2          	.word	0x000001d2
-  54:	000001d2          	.word	0x000001d2
-  58:	000001d2          	.word	0x000001d2
-  5c:	000001d2          	.word	0x000001d2
-  60:	000001d2          	.word	0x000001d2
-  64:	000001d2          	.word	0x000001d2
-  68:	000001d2          	.word	0x000001d2
-  6c:	000001d2          	.word	0x000001d2
-  70:	000001d2          	.word	0x000001d2
-  74:	000001d2          	.word	0x000001d2
-  78:	000001d2          	.word	0x000001d2
-  7c:	000001d2          	.word	0x000001d2
-  80:	00000440          	.word	0x00000440
-  84:	000001d2          	.word	0x000001d2
-  88:	000001d2          	.word	0x000001d2
-  8c:	000001d2          	.word	0x000001d2
-  90:	000001d2          	.word	0x000001d2
-  94:	000001d2          	.word	0x000001d2
-  98:	000001d2          	.word	0x000001d2
+  40:	0000015c          	.word	0x0000015c
+  44:	0000015c          	.word	0x0000015c
+  48:	0000015c          	.word	0x0000015c
+  4c:	0000015c          	.word	0x0000015c
+  50:	0000015c          	.word	0x0000015c
+  54:	0000015c          	.word	0x0000015c
+  58:	0000015c          	.word	0x0000015c
+  5c:	0000015c          	.word	0x0000015c
+  60:	0000015c          	.word	0x0000015c
+  64:	0000015c          	.word	0x0000015c
+  68:	0000015c          	.word	0x0000015c
+  6c:	0000015c          	.word	0x0000015c
+  70:	0000015c          	.word	0x0000015c
+  74:	0000015c          	.word	0x0000015c
+  78:	0000015c          	.word	0x0000015c
+  7c:	0000015c          	.word	0x0000015c
+  80:	000003ba          	.word	0x000003ba
+  84:	0000015c          	.word	0x0000015c
+  88:	0000015c          	.word	0x0000015c
+  8c:	0000015c          	.word	0x0000015c
+  90:	0000015c          	.word	0x0000015c
+  94:	0000015c          	.word	0x0000015c
+  98:	0000015c          	.word	0x0000015c
   9c:	0000                	unimp
 	...
 
 Disassembly of section .text:
 
-000000a0 <__divsi3>:
-  a0:	02054e63          	bltz	a0,dc <__umodsi3+0x8>
-  a4:	0405c363          	bltz	a1,ea <__umodsi3+0x16>
-
-000000a8 <__hidden___udivsi3>:
-  a8:	862e                	mv	a2,a1
-  aa:	85aa                	mv	a1,a0
-  ac:	557d                	li	a0,-1
-  ae:	c215                	beqz	a2,d2 <__hidden___udivsi3+0x2a>
-  b0:	4685                	li	a3,1
-  b2:	00b67863          	bgeu	a2,a1,c2 <__hidden___udivsi3+0x1a>
-  b6:	00c05663          	blez	a2,c2 <__hidden___udivsi3+0x1a>
-  ba:	0606                	slli	a2,a2,0x1
-  bc:	0686                	slli	a3,a3,0x1
-  be:	feb66ce3          	bltu	a2,a1,b6 <__hidden___udivsi3+0xe>
-  c2:	4501                	li	a0,0
-  c4:	00c5e463          	bltu	a1,a2,cc <__hidden___udivsi3+0x24>
-  c8:	8d91                	sub	a1,a1,a2
-  ca:	8d55                	or	a0,a0,a3
-  cc:	8285                	srli	a3,a3,0x1
-  ce:	8205                	srli	a2,a2,0x1
-  d0:	faf5                	bnez	a3,c4 <__hidden___udivsi3+0x1c>
-  d2:	8082                	ret
-
-000000d4 <__umodsi3>:
-  d4:	8286                	mv	t0,ra
-  d6:	3fc9                	jal	a8 <__hidden___udivsi3>
-  d8:	852e                	mv	a0,a1
-  da:	8282                	jr	t0
-  dc:	40a00533          	neg	a0,a0
-  e0:	00b04763          	bgtz	a1,ee <__umodsi3+0x1a>
-  e4:	40b005b3          	neg	a1,a1
-  e8:	b7c1                	j	a8 <__hidden___udivsi3>
-  ea:	40b005b3          	neg	a1,a1
-  ee:	8286                	mv	t0,ra
-  f0:	3f65                	jal	a8 <__hidden___udivsi3>
-  f2:	40a00533          	neg	a0,a0
-  f6:	8282                	jr	t0
-
-000000f8 <__modsi3>:
-  f8:	8286                	mv	t0,ra
-  fa:	0005c763          	bltz	a1,108 <__modsi3+0x10>
-  fe:	00054963          	bltz	a0,110 <__modsi3+0x18>
- 102:	375d                	jal	a8 <__hidden___udivsi3>
- 104:	852e                	mv	a0,a1
- 106:	8282                	jr	t0
- 108:	40b005b3          	neg	a1,a1
- 10c:	fe055be3          	bgez	a0,102 <__modsi3+0xa>
- 110:	40a00533          	neg	a0,a0
- 114:	3f51                	jal	a8 <__hidden___udivsi3>
- 116:	40b00533          	neg	a0,a1
- 11a:	8282                	jr	t0
-	...
-
-0000011e <gpio_set_mode.constprop.0>:
+000000a0 <gpio_set_mode.constprop.0>:
 	
 	// Make array of uint8_t from [pin] enum. See definition for details
 	uint8_t *byte = (uint8_t *)&pin;
 	
 	// Set the RCC Register to enable clock on the specified port
 	GPIO_RCC->APB2PCENR |= (RCC_APB2PCENR_AFIO | (RCC_APB2PCENR_IOPxEN << byte[0]));
- 11e:	400216b7          	lui	a3,0x40021
- 122:	4e90                	lw	a2,24(a3)
- 124:	4791                	li	a5,4
- 126:	00a797b3          	sll	a5,a5,a0
- 12a:	8fd1                	or	a5,a5,a2
- 12c:	0017e793          	ori	a5,a5,1
- 130:	ce9c                	sw	a5,24(a3)
- 132:	0ff57713          	zext.b	a4,a0
+  a0:	400216b7          	lui	a3,0x40021
+  a4:	4e90                	lw	a2,24(a3)
+  a6:	4791                	li	a5,4
+  a8:	00a797b3          	sll	a5,a5,a0
+  ac:	8fd1                	or	a5,a5,a2
+  ae:	0017e793          	ori	a5,a5,1
+  b2:	ce9c                	sw	a5,24(a3)
+  b4:	0ff57713          	zext.b	a4,a0
 
 	// Clear then set the GPIO Config Register
 	GPIO_PORT_MAP[ byte[0] ]->CFGLR &=        ~(0x0F  << (4 * byte[1]));
- 136:	070a                	slli	a4,a4,0x2
- 138:	4b000793          	li	a5,1200
- 13c:	97ba                	add	a5,a5,a4
- 13e:	4398                	lw	a4,0(a5)
- 140:	8119                	srli	a0,a0,0x6
- 142:	3fc57513          	andi	a0,a0,1020
- 146:	4314                	lw	a3,0(a4)
- 148:	47bd                	li	a5,15
- 14a:	00a797b3          	sll	a5,a5,a0
- 14e:	fff7c793          	not	a5,a5
- 152:	8ff5                	and	a5,a5,a3
- 154:	c31c                	sw	a5,0(a4)
+  b8:	070a                	slli	a4,a4,0x2
+  ba:	3fc00793          	li	a5,1020
+  be:	97ba                	add	a5,a5,a4
+  c0:	4398                	lw	a4,0(a5)
+  c2:	8119                	srli	a0,a0,0x6
+  c4:	3fc57513          	andi	a0,a0,1020
+  c8:	4314                	lw	a3,0(a4)
+  ca:	47bd                	li	a5,15
+  cc:	00a797b3          	sll	a5,a5,a0
+  d0:	fff7c793          	not	a5,a5
+  d4:	8ff5                	and	a5,a5,a3
+  d6:	c31c                	sw	a5,0(a4)
 	GPIO_PORT_MAP[ byte[0] ]->CFGLR |=  (mode & 0x0F) << (4 * byte[1]);
- 156:	4314                	lw	a3,0(a4)
- 158:	4785                	li	a5,1
- 15a:	00a797b3          	sll	a5,a5,a0
- 15e:	8fd5                	or	a5,a5,a3
- 160:	c31c                	sw	a5,0(a4)
+  d8:	4314                	lw	a3,0(a4)
+  da:	4785                	li	a5,1
+  dc:	00a797b3          	sll	a5,a5,a0
+  e0:	8fd5                	or	a5,a5,a3
+  e2:	c31c                	sw	a5,0(a4)
 
 	// If [mode] is INPUT_PULLUP or INPUT_PULLDOWN, set the [OUTDR] Register
 	if(mode == INPUT_PULLUP || mode == INPUT_PULLDOWN)
 		gpio_digital_write(pin, mode >> 4);
 }
- 162:	8082                	ret
+  e4:	8082                	ret
 
-00000164 <handle_reset>:
+000000e6 <handle_reset>:
 	asm volatile( ".option   pop;\n");
 }
 
 void handle_reset()
 {
 	asm volatile( "\n\
- 164:	20000197          	auipc	gp,0x20000
- 168:	69c18193          	addi	gp,gp,1692 # 20000800 <__global_pointer$>
- 16c:	00018113          	mv	sp,gp
- 170:	08000513          	li	a0,128
- 174:	30051073          	csrw	mstatus,a0
- 178:	468d                	li	a3,3
- 17a:	00000517          	auipc	a0,0x0
- 17e:	e8650513          	addi	a0,a0,-378 # 0 <InterruptVector>
- 182:	8d55                	or	a0,a0,a3
- 184:	30551073          	csrw	mtvec,a0
+  e6:	20000197          	auipc	gp,0x20000
+  ea:	71a18193          	addi	gp,gp,1818 # 20000800 <__global_pointer$>
+  ee:	00018113          	mv	sp,gp
+  f2:	08000513          	li	a0,128
+  f6:	30051073          	csrw	mstatus,a0
+  fa:	468d                	li	a3,3
+  fc:	00000517          	auipc	a0,0x0
+ 100:	f0450513          	addi	a0,a0,-252 # 0 <InterruptVector>
+ 104:	8d55                	or	a0,a0,a3
+ 106:	30551073          	csrw	mtvec,a0
 	csrw mtvec, a0\n" 
 	: : : "a0", "a3", "memory");
 
 	// Careful: Use registers to prevent overwriting of self-data.
 	// This clears out BSS.
 asm volatile(
- 188:	80818513          	addi	a0,gp,-2040 # 20000008 <digit_state.0>
- 18c:	82418593          	addi	a1,gp,-2012 # 20000024 <_ebss>
- 190:	4601                	li	a2,0
- 192:	00b55663          	bge	a0,a1,19e <handle_reset+0x3a>
- 196:	c110                	sw	a2,0(a0)
- 198:	0511                	addi	a0,a0,4
- 19a:	feb54ee3          	blt	a0,a1,196 <handle_reset+0x32>
- 19e:	4fc00513          	li	a0,1276
- 1a2:	20000597          	auipc	a1,0x20000
- 1a6:	e5e58593          	addi	a1,a1,-418 # 20000000 <g_seg_data>
- 1aa:	80818613          	addi	a2,gp,-2040 # 20000008 <digit_state.0>
- 1ae:	00c58863          	beq	a1,a2,1be <handle_reset+0x5a>
- 1b2:	4114                	lw	a3,0(a0)
- 1b4:	c194                	sw	a3,0(a1)
- 1b6:	0511                	addi	a0,a0,4
- 1b8:	0591                	addi	a1,a1,4
- 1ba:	fec59ae3          	bne	a1,a2,1ae <handle_reset+0x4a>
+ 10a:	20000517          	auipc	a0,0x20000
+ 10e:	ef650513          	addi	a0,a0,-266 # 20000000 <g_seg_data>
+ 112:	81018593          	addi	a1,gp,-2032 # 20000010 <_ebss>
+ 116:	4601                	li	a2,0
+ 118:	00b55663          	bge	a0,a1,124 <handle_reset+0x3e>
+ 11c:	c110                	sw	a2,0(a0)
+ 11e:	0511                	addi	a0,a0,4
+ 120:	feb54ee3          	blt	a0,a1,11c <handle_reset+0x36>
+ 124:	44800513          	li	a0,1096
+ 128:	20000597          	auipc	a1,0x20000
+ 12c:	ed858593          	addi	a1,a1,-296 # 20000000 <g_seg_data>
+ 130:	20000617          	auipc	a2,0x20000
+ 134:	ed060613          	addi	a2,a2,-304 # 20000000 <g_seg_data>
+ 138:	00c58863          	beq	a1,a2,148 <handle_reset+0x62>
+ 13c:	4114                	lw	a3,0(a0)
+ 13e:	c194                	sw	a3,0(a1)
+ 140:	0511                	addi	a0,a0,4
+ 142:	0591                	addi	a1,a1,4
+ 144:	fec59ae3          	bne	a1,a2,138 <handle_reset+0x52>
 );
 
 #if defined( FUNCONF_SYSTICK_USE_HCLK ) && FUNCONF_SYSTICK_USE_HCLK
 	SysTick->CTLR = 5;
 #else
 	SysTick->CTLR = 1;
- 1be:	e000f7b7          	lui	a5,0xe000f
- 1c2:	4705                	li	a4,1
- 1c4:	c398                	sw	a4,0(a5)
+ 148:	e000f7b7          	lui	a5,0xe000f
+ 14c:	4705                	li	a4,1
+ 14e:	c398                	sw	a4,0(a5)
 #endif
 
 	// set mepc to be main as the root app.
 asm volatile(
- 1c6:	23600793          	li	a5,566
- 1ca:	34179073          	csrw	mepc,a5
- 1ce:	30200073          	mret
+ 150:	1c000793          	li	a5,448
+ 154:	34179073          	csrw	mepc,a5
+ 158:	30200073          	mret
 
-000001d2 <ADC1_IRQHandler>:
+0000015c <ADC1_IRQHandler>:
 	asm volatile( "1: j 1b" );
- 1d2:	a001                	j	1d2 <ADC1_IRQHandler>
+ 15c:	a001                	j	15c <ADC1_IRQHandler>
 
-000001d4 <NMI_Handler>:
+0000015e <NMI_Handler>:
 	RCC->INTR |= RCC_CSSC;	// clear the clock security int flag
- 1d4:	40021737          	lui	a4,0x40021
- 1d8:	471c                	lw	a5,8(a4)
- 1da:	008006b7          	lui	a3,0x800
- 1de:	8fd5                	or	a5,a5,a3
- 1e0:	c71c                	sw	a5,8(a4)
+ 15e:	40021737          	lui	a4,0x40021
+ 162:	471c                	lw	a5,8(a4)
+ 164:	008006b7          	lui	a3,0x800
+ 168:	8fd5                	or	a5,a5,a3
+ 16a:	c71c                	sw	a5,8(a4)
 
-000001e2 <SystemInit>:
+0000016c <SystemInit>:
 	// CH32V003 flash latency
 #if defined(CH32X03x)
 	FLASH->ACTLR = FLASH_ACTLR_LATENCY_2;                   // +2 Cycle Latency (Recommended per TRM)
 #elif defined(CH32V003)
 	#if FUNCONF_SYSTEM_CORE_CLOCK > 25000000
 		FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;               // +1 Cycle Latency
- 1e2:	400227b7          	lui	a5,0x40022
- 1e6:	4705                	li	a4,1
- 1e8:	c398                	sw	a4,0(a5)
+ 16c:	400227b7          	lui	a5,0x40022
+ 170:	4705                	li	a4,1
+ 172:	c398                	sw	a4,0(a5)
 #if defined(FUNCONF_USE_HSI) && FUNCONF_USE_HSI
 	#if defined(CH32V30x) || defined(CH32V20x) || defined(CH32V10x)
 		EXTEN->EXTEN_CTR |= EXTEN_PLL_HSI_PRE;
 	#endif
 	#if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
 		RCC->CFGR0 = BASE_CFGR0;
- 1ea:	400217b7          	lui	a5,0x40021
+ 174:	400217b7          	lui	a5,0x40021
 		RCC->CTLR  = BASE_CTLR | RCC_HSION | RCC_PLLON; 			// Use HSI, enable PLL.
- 1ee:	01080737          	lui	a4,0x1080
+ 178:	01080737          	lui	a4,0x1080
 		RCC->CFGR0 = BASE_CFGR0;
- 1f2:	0007a223          	sw	zero,4(a5) # 40021004 <__global_pointer$+0x20020804>
+ 17c:	0007a223          	sw	zero,4(a5) # 40021004 <__global_pointer$+0x20020804>
 		RCC->CTLR  = BASE_CTLR | RCC_HSION | RCC_PLLON; 			// Use HSI, enable PLL.
- 1f6:	08170713          	addi	a4,a4,129 # 1080081 <lib_uart.c.a081860e+0x107d026>
- 1fa:	c398                	sw	a4,0(a5)
+ 180:	08170713          	addi	a4,a4,129 # 1080081 <lib_uart.c.02352773+0x107cf68>
+ 184:	c398                	sw	a4,0(a5)
 	#else
 		FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;       		// +1 Cycle Latency
 	#endif
 #endif
 
 	RCC->INTR  = 0x009F0000;                               // Clear PLL, CSSC, HSE, HSI and LSI ready flags.
- 1fc:	009f0737          	lui	a4,0x9f0
- 200:	c798                	sw	a4,8(a5)
+ 186:	009f0737          	lui	a4,0x9f0
+ 18a:	c798                	sw	a4,8(a5)
 
 #if defined(FUNCONF_USE_PLL) && FUNCONF_USE_PLL
 	while((RCC->CTLR & RCC_PLLRDY) == 0);                       	// Wait till PLL is ready
- 202:	4398                	lw	a4,0(a5)
- 204:	00671693          	slli	a3,a4,0x6
- 208:	fe06dde3          	bgez	a3,202 <SystemInit+0x20>
+ 18c:	4398                	lw	a4,0(a5)
+ 18e:	00671693          	slli	a3,a4,0x6
+ 192:	fe06dde3          	bgez	a3,18c <SystemInit+0x20>
 	uint32_t tmp32 = RCC->CFGR0 & ~(0x03);							// clr the SW
- 20c:	43d8                	lw	a4,4(a5)
+ 196:	43d8                	lw	a4,4(a5)
 	RCC->CFGR0 = tmp32 | RCC_SW_PLL;                       			// Select PLL as system clock source
 	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08); 	// Wait till PLL is used as system clock source
- 20e:	400216b7          	lui	a3,0x40021
+ 198:	400216b7          	lui	a3,0x40021
 	uint32_t tmp32 = RCC->CFGR0 & ~(0x03);							// clr the SW
- 212:	9b71                	andi	a4,a4,-4
+ 19c:	9b71                	andi	a4,a4,-4
 	RCC->CFGR0 = tmp32 | RCC_SW_PLL;                       			// Select PLL as system clock source
- 214:	00276713          	ori	a4,a4,2
- 218:	c3d8                	sw	a4,4(a5)
+ 19e:	00276713          	ori	a4,a4,2
+ 1a2:	c3d8                	sw	a4,4(a5)
 	while ((RCC->CFGR0 & (uint32_t)RCC_SWS) != (uint32_t)0x08); 	// Wait till PLL is used as system clock source
- 21a:	4721                	li	a4,8
- 21c:	42dc                	lw	a5,4(a3)
- 21e:	8bb1                	andi	a5,a5,12
- 220:	fee79ee3          	bne	a5,a4,21c <SystemInit+0x3a>
+ 1a4:	4721                	li	a4,8
+ 1a6:	42dc                	lw	a5,4(a3)
+ 1a8:	8bb1                	andi	a5,a5,12
+ 1aa:	fee79ee3          	bne	a5,a4,1a6 <SystemInit+0x3a>
 	*DMDATA1 = 0x0;
- 224:	e00007b7          	lui	a5,0xe0000
- 228:	0e07ac23          	sw	zero,248(a5) # e00000f8 <__global_pointer$+0xbffff8f8>
+ 1ae:	e00007b7          	lui	a5,0xe0000
+ 1b2:	0e07ac23          	sw	zero,248(a5) # e00000f8 <__global_pointer$+0xbffff8f8>
 	*DMDATA0 = 0x80;
- 22c:	08000713          	li	a4,128
- 230:	0ee7aa23          	sw	a4,244(a5)
+ 1b6:	08000713          	li	a4,128
+ 1ba:	0ee7aa23          	sw	a4,244(a5)
 	SetupUART( UART_BRR );
 #endif
 #if defined( FUNCONF_USE_DEBUGPRINTF ) && FUNCONF_USE_DEBUGPRINTF
 	SetupDebugPrintf();
 #endif
 }
- 234:	8082                	ret
+ 1be:	8082                	ret
 
-00000236 <main>:
-/// to be transmitted to the next display.
-
+000001c0 <main>:
+/// @return None
+static void disp_refresh(void);
 
 /*** Main ********************************************************************/
 int main(void)
 {
- 236:	1131                	addi	sp,sp,-20
- 238:	c426                	sw	s1,8(sp)
- 23a:	c806                	sw	ra,16(sp)
- 23c:	c622                	sw	s0,12(sp)
+ 1c0:	1131                	addi	sp,sp,-20
+ 1c2:	c426                	sw	s1,8(sp)
+ 1c4:	c806                	sw	ra,16(sp)
+ 1c6:	c622                	sw	s0,12(sp)
 	SystemInit();
- 23e:	3755                	jal	1e2 <SystemInit>
+ 1c8:	3755                	jal	16c <SystemInit>
 
 /*** Functions ***************************************************************/
 static void systick_init(void)
 {
 	// Reset any pre-existing configuration
 	SysTick->CTLR = 0x0000;
- 240:	e000f7b7          	lui	a5,0xe000f
+ 1ca:	e000f7b7          	lui	a5,0xe000f
 	
 	// Set the compare register to trigger once per millisecond
 	SysTick->CMP = SYSTICK_ONE_MILLISECOND - 1;
- 244:	6731                	lui	a4,0xc
+ 1ce:	6731                	lui	a4,0xc
 	SysTick->CTLR = 0x0000;
- 246:	0007a023          	sw	zero,0(a5) # e000f000 <__global_pointer$+0xc000e800>
+ 1d0:	0007a023          	sw	zero,0(a5) # e000f000 <__global_pointer$+0xc000e800>
 	SysTick->CMP = SYSTICK_ONE_MILLISECOND - 1;
- 24a:	b7f70713          	addi	a4,a4,-1153 # bb7f <lib_uart.c.a081860e+0x8b24>
- 24e:	cb98                	sw	a4,16(a5)
+ 1d4:	b7f70713          	addi	a4,a4,-1153 # bb7f <lib_uart.c.02352773+0x8a66>
+ 1d8:	cb98                	sw	a4,16(a5)
 
 	// Reset the Count Register, and the global millis counter to 0
 	SysTick->CNT = 0x00000000;
- 250:	0007a423          	sw	zero,8(a5)
+ 1da:	0007a423          	sw	zero,8(a5)
 	g_systick_millis = 0x00000000;
- 254:	8001a823          	sw	zero,-2032(gp) # 20000010 <g_systick_millis>
+ 1de:	8001a623          	sw	zero,-2036(gp) # 2000000c <g_systick_millis>
 	
 	// Set the SysTick Configuration
 	// NOTE: By not setting SYSTICK_CTLR_STRE, we maintain compatibility with
 	// busywait delay funtions used by ch32v003_fun.
 	SysTick->CTLR |= SYSTICK_CTLR_STE   |  // Enable Counter
- 258:	4398                	lw	a4,0(a5)
+ 1e2:	4398                	lw	a4,0(a5)
  * @param   IRQn - Interrupt Numbers
  * @return  none
  */
 RV_STATIC_INLINE void NVIC_EnableIRQ(IRQn_Type IRQn)
 {
 	NVIC->IENR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F));
- 25a:	6685                	lui	a3,0x1
- 25c:	00776713          	ori	a4,a4,7
- 260:	c398                	sw	a4,0(a5)
- 262:	e000e737          	lui	a4,0xe000e
- 266:	10d72023          	sw	a3,256(a4) # e000e100 <__global_pointer$+0xc000d900>
+ 1e4:	6685                	lui	a3,0x1
+ 1e6:	00776713          	ori	a4,a4,7
+ 1ea:	c398                	sw	a4,0(a5)
+ 1ec:	e000e737          	lui	a4,0xe000e
+ 1f0:	10d72023          	sw	a3,256(a4) # e000e100 <__global_pointer$+0xc000d900>
 	uint32_t targend = SysTick->CNT + n;
- 26a:	4794                	lw	a3,8(a5)
- 26c:	002dc737          	lui	a4,0x2dc
- 270:	6c070713          	addi	a4,a4,1728 # 2dc6c0 <lib_uart.c.a081860e+0x2d9665>
- 274:	96ba                	add	a3,a3,a4
+ 1f4:	4794                	lw	a3,8(a5)
+ 1f6:	002dc737          	lui	a4,0x2dc
+ 1fa:	6c070713          	addi	a4,a4,1728 # 2dc6c0 <lib_uart.c.02352773+0x2d95a7>
+ 1fe:	96ba                	add	a3,a3,a4
 	while( ((int32_t)( SysTick->CNT - targend )) < 0 );
- 276:	4798                	lw	a4,8(a5)
- 278:	8f15                	sub	a4,a4,a3
- 27a:	fe074ee3          	bltz	a4,276 <main+0x40>
- 27e:	4c000793          	li	a5,1216
+ 200:	4798                	lw	a4,8(a5)
+ 202:	8f15                	sub	a4,a4,a3
+ 204:	fe074ee3          	bltz	a4,200 <main+0x40>
+ 208:	40c00793          	li	a5,1036
 	// TODO: Using FLASH, set the option bit to dsiable the NRST Pin
 
 	// Set all Segment GPIO to OUTPUT, LOW
 	for(uint8_t seg_pin = 0; seg_pin < 15; seg_pin++)
 	{
 		gpio_set_mode(segment_pin[seg_pin], OUTPUT_10MHZ_PP);
- 282:	4388                	lw	a0,0(a5)
- 284:	c23e                	sw	a5,4(sp)
+ 20c:	4388                	lw	a0,0(a5)
+ 20e:	c23e                	sw	a5,4(sp)
 inline void gpio_digital_write(const GPIO_PIN pin, const GPIO_STATE state)
 {
 	// Make array of uint8_t from [pin] enum. See definition for details
 	uint8_t *byte = (uint8_t *)&pin;
 
 	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
- 286:	4405                	li	s0,1
- 288:	c02a                	sw	a0,0(sp)
- 28a:	3d51                	jal	11e <gpio_set_mode.constprop.0>
- 28c:	4502                	lw	a0,0(sp)
+ 210:	4405                	li	s0,1
+ 212:	c02a                	sw	a0,0(sp)
+ 214:	3571                	jal	a0 <gpio_set_mode.constprop.0>
+ 216:	4502                	lw	a0,0(sp)
 	if(state == GPIO_LOW) mask = mask << 16;  // Shift by 16 if LOW, to Reset
 
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
- 28e:	4b000693          	li	a3,1200
+ 218:	3fc00693          	li	a3,1020
 	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
- 292:	00855713          	srli	a4,a0,0x8
+ 21c:	00855713          	srli	a4,a0,0x8
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
- 296:	0ff57513          	zext.b	a0,a0
- 29a:	050a                	slli	a0,a0,0x2
- 29c:	96aa                	add	a3,a3,a0
- 29e:	4294                	lw	a3,0(a3)
+ 220:	0ff57513          	zext.b	a0,a0
+ 224:	050a                	slli	a0,a0,0x2
+ 226:	96aa                	add	a3,a3,a0
+ 228:	4294                	lw	a3,0(a3)
 	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
- 2a0:	00e41733          	sll	a4,s0,a4
+ 22a:	00e41733          	sll	a4,s0,a4
 	if(state == GPIO_LOW) mask = mask << 16;  // Shift by 16 if LOW, to Reset
- 2a4:	0742                	slli	a4,a4,0x10
+ 22e:	0742                	slli	a4,a4,0x10
 	for(uint8_t seg_pin = 0; seg_pin < 15; seg_pin++)
- 2a6:	4792                	lw	a5,4(sp)
+ 230:	4792                	lw	a5,4(sp)
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
- 2a8:	ca98                	sw	a4,16(a3)
- 2aa:	4b000713          	li	a4,1200
- 2ae:	c03a                	sw	a4,0(sp)
- 2b0:	0791                	addi	a5,a5,4
- 2b2:	4fc00713          	li	a4,1276
- 2b6:	fcf716e3          	bne	a4,a5,282 <main+0x4c>
+ 232:	ca98                	sw	a4,16(a3)
+ 234:	3fc00713          	li	a4,1020
+ 238:	c03a                	sw	a4,0(sp)
+ 23a:	0791                	addi	a5,a5,4
+ 23c:	44800713          	li	a4,1096
+ 240:	fcf716e3          	bne	a4,a5,20c <main+0x4c>
 		gpio_digital_write(segment_pin[seg_pin], GPIO_LOW);
 	}
 
 	// Set the Display Control Pin to OUTPUT, LOW
 	gpio_set_mode(digit_pin, OUTPUT_10MHZ_PP);
- 2ba:	70300513          	li	a0,1795
- 2be:	3585                	jal	11e <gpio_set_mode.constprop.0>
- 2c0:	400117b7          	lui	a5,0x40011
- 2c4:	40078793          	addi	a5,a5,1024 # 40011400 <__global_pointer$+0x20010c00>
- 2c8:	00800737          	lui	a4,0x800
- 2cc:	cb98                	sw	a4,16(a5)
-	}
+ 244:	70300513          	li	a0,1795
+ 248:	3da1                	jal	a0 <gpio_set_mode.constprop.0>
+ 24a:	400117b7          	lui	a5,0x40011
+ 24e:	40078793          	addi	a5,a5,1024 # 40011400 <__global_pointer$+0x20010c00>
+ 252:	00800737          	lui	a4,0x800
+ 256:	cb98                	sw	a4,16(a5)
 
-	// Set up the RX Ring buffer Variables
-	_uart_rx_buffer.buffer = (uint8_t *)rx_buffer_ptr;
-	_uart_rx_buffer.size   = rx_buffer_size;
-	_uart_rx_buffer.head   = 0;
- 2ce:	81418713          	addi	a4,gp,-2028 # 20000014 <_uart_rx_buffer>
- 2d2:	00072423          	sw	zero,8(a4) # 800008 <lib_uart.c.a081860e+0x7fcfad>
-	_uart_rx_buffer.tail   = 0;
- 2d6:	00072623          	sw	zero,12(a4)
-	
+/*** Initialiser *************************************************************/
+uart_err_t uart_init(const uart_config_t *conf)
+{	
 	// Enable UART1 Clock
 	RCC->APB2PCENR |= RCC_APB2Periph_USART1;
- 2da:	40021737          	lui	a4,0x40021
- 2de:	4f14                	lw	a3,24(a4)
- 2e0:	6611                	lui	a2,0x4
+ 258:	40021737          	lui	a4,0x40021
+ 25c:	4f14                	lw	a3,24(a4)
+ 25e:	6611                	lui	a2,0x4
+	gpio_digital_write(digit_pin, GPIO_LOW);
 
-	// Guard against chars being too low or high
-	// To convert ASCII char to its index in the font, minus 'space' (0x20)
-	// from the character
-	if(string[0] > 0x1F && string[0] < 0x7F)
-		g_seg_data[0] = ascii_font[ (string[0] - 0x20) ];
- 2e2:	20000337          	lui	t1,0x20000
- 2e6:	8ed1                	or	a3,a3,a2
- 2e8:	cf14                	sw	a3,24(a4)
+	// Set the global display data to 0
+	g_seg_data[0] = 0x0000;
+ 260:	20000337          	lui	t1,0x20000
+ 264:	00032023          	sw	zero,0(t1) # 20000000 <g_seg_data>
+ 268:	8ed1                	or	a3,a3,a2
+ 26a:	cf14                	sw	a3,24(a4)
 	// Enable the UART GPIO Port, and the Alternate Function IO Flag
 	RCC->APB2PCENR |= UART_TXRX_PORT_RCC | RCC_APB2Periph_AFIO;
- 2ea:	4f14                	lw	a3,24(a4)
+ 26c:	4f14                	lw	a3,24(a4)
 
 	// Reset, then set the AFIO Register depending on UART_PINOUT selected
 	AFIO->PCFR1 &= UART_AFIO_RESET_MASK;
- 2ec:	ffe00637          	lui	a2,0xffe00
- 2f0:	166d                	addi	a2,a2,-5 # ffdffffb <__global_pointer$+0xdfdff7fb>
+ 26e:	ffe00637          	lui	a2,0xffe00
+ 272:	166d                	addi	a2,a2,-5 # ffdffffb <__global_pointer$+0xdfdff7fb>
 	RCC->APB2PCENR |= UART_TXRX_PORT_RCC | RCC_APB2Periph_AFIO;
- 2f2:	0216e693          	ori	a3,a3,33
- 2f6:	cf14                	sw	a3,24(a4)
+ 274:	0216e693          	ori	a3,a3,33
+ 278:	cf14                	sw	a3,24(a4)
 	AFIO->PCFR1 &= UART_AFIO_RESET_MASK;
- 2f8:	40010737          	lui	a4,0x40010
- 2fc:	4354                	lw	a3,4(a4)
- 2fe:	8ef1                	and	a3,a3,a2
- 300:	c354                	sw	a3,4(a4)
+ 27a:	40010737          	lui	a4,0x40010
+ 27e:	4354                	lw	a3,4(a4)
+ 280:	8ef1                	and	a3,a3,a2
+ 282:	c354                	sw	a3,4(a4)
 	AFIO->PCFR1 |= UART_AFIO_MASK;
- 302:	4354                	lw	a3,4(a4)
+ 284:	4354                	lw	a3,4(a4)
 	// Enable the UART RXNE Interrupt
 	USART1->CTLR1 |= USART_CTLR1_RXNEIE;
 	NVIC_EnableIRQ(USART1_IRQn);
 	
 	// Enable the UART
 	USART1->CTLR1 |= CTLR1_UE_Set;
- 304:	6609                	lui	a2,0x2
+ 286:	6609                	lui	a2,0x2
 	AFIO->PCFR1 |= UART_AFIO_MASK;
- 306:	c354                	sw	a3,4(a4)
+ 288:	c354                	sw	a3,4(a4)
 	UART_TXRX_PORT->CFGLR &= ~(0x0F << (4 * UART_PIN_TX));
- 308:	4398                	lw	a4,0(a5)
- 30a:	ff1006b7          	lui	a3,0xff100
- 30e:	16fd                	addi	a3,a3,-1 # ff0fffff <__global_pointer$+0xdf0ff7ff>
- 310:	8f75                	and	a4,a4,a3
- 312:	c398                	sw	a4,0(a5)
+ 28a:	4398                	lw	a4,0(a5)
+ 28c:	ff1006b7          	lui	a3,0xff100
+ 290:	16fd                	addi	a3,a3,-1 # ff0fffff <__global_pointer$+0xdf0ff7ff>
+ 292:	8f75                	and	a4,a4,a3
+ 294:	c398                	sw	a4,0(a5)
 	UART_TXRX_PORT->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP_AF) << (4 * UART_PIN_TX);	
- 314:	4398                	lw	a4,0(a5)
- 316:	009006b7          	lui	a3,0x900
- 31a:	8f55                	or	a4,a4,a3
- 31c:	c398                	sw	a4,0(a5)
+ 296:	4398                	lw	a4,0(a5)
+ 298:	009006b7          	lui	a3,0x900
+ 29c:	8f55                	or	a4,a4,a3
+ 29e:	c398                	sw	a4,0(a5)
 	UART_TXRX_PORT->CFGLR &= ~(0x0F << (4 * UART_PIN_RX));
- 31e:	4398                	lw	a4,0(a5)
- 320:	f10006b7          	lui	a3,0xf1000
- 324:	16fd                	addi	a3,a3,-1 # f0ffffff <__global_pointer$+0xd0fff7ff>
- 326:	8f75                	and	a4,a4,a3
- 328:	c398                	sw	a4,0(a5)
+ 2a0:	4398                	lw	a4,0(a5)
+ 2a2:	f10006b7          	lui	a3,0xf1000
+ 2a6:	16fd                	addi	a3,a3,-1 # f0ffffff <__global_pointer$+0xd0fff7ff>
+ 2a8:	8f75                	and	a4,a4,a3
+ 2aa:	c398                	sw	a4,0(a5)
 	UART_TXRX_PORT->CFGLR |= GPIO_CNF_IN_FLOATING << (4 * UART_PIN_RX);
- 32a:	4398                	lw	a4,0(a5)
- 32c:	040006b7          	lui	a3,0x4000
- 330:	8f55                	or	a4,a4,a3
- 332:	c398                	sw	a4,0(a5)
+ 2ac:	4398                	lw	a4,0(a5)
+ 2ae:	040006b7          	lui	a3,0x4000
+ 2b2:	8f55                	or	a4,a4,a3
+ 2b4:	c398                	sw	a4,0(a5)
 	USART1->CTLR1 = USART_Mode_Tx | USART_Mode_Rx | conf->wordlength | conf->parity;
- 334:	46b1                	li	a3,12
- 336:	40014737          	lui	a4,0x40014
- 33a:	80d71623          	sh	a3,-2036(a4) # 4001380c <__global_pointer$+0x2001300c>
+ 2b6:	46b1                	li	a3,12
+ 2b8:	40014737          	lui	a4,0x40014
+ 2bc:	80d71623          	sh	a3,-2036(a4) # 4001380c <__global_pointer$+0x2001300c>
 	USART1->CTLR2 = conf->stopbits;
- 33e:	80071823          	sh	zero,-2032(a4)
+ 2c0:	80071823          	sh	zero,-2032(a4)
 	USART1->CTLR3 = (uint16_t)0x0000 | conf->flowctrl;
- 342:	80071a23          	sh	zero,-2028(a4)
+ 2c4:	80071a23          	sh	zero,-2028(a4)
 	USART1->BRR = conf->baudrate;
- 346:	1a100693          	li	a3,417
- 34a:	80d71423          	sh	a3,-2040(a4)
+ 2c8:	1a100693          	li	a3,417
+ 2cc:	80d71423          	sh	a3,-2040(a4)
 	USART1->CTLR1 |= USART_CTLR1_RXNEIE;
- 34e:	80c75683          	lhu	a3,-2036(a4)
- 352:	0206e693          	ori	a3,a3,32
- 356:	80d71623          	sh	a3,-2036(a4)
- 35a:	e000e6b7          	lui	a3,0xe000e
- 35e:	1086a223          	sw	s0,260(a3) # e000e104 <__global_pointer$+0xc000d904>
+ 2d0:	80c75683          	lhu	a3,-2036(a4)
+ 2d4:	0206e693          	ori	a3,a3,32
+ 2d8:	80d71623          	sh	a3,-2036(a4)
+ 2dc:	e000e6b7          	lui	a3,0xe000e
+ 2e0:	1086a223          	sw	s0,260(a3) # e000e104 <__global_pointer$+0xc000d904>
 	USART1->CTLR1 |= CTLR1_UE_Set;
- 362:	80c75683          	lhu	a3,-2036(a4)
- 366:	8ed1                	or	a3,a3,a2
- 368:	80d71623          	sh	a3,-2036(a4)
- 36c:	10000737          	lui	a4,0x10000
- 370:	0f670713          	addi	a4,a4,246 # 100000f6 <lib_uart.c.a081860e+0xfffd09b>
- 374:	00e32023          	sw	a4,0(t1) # 20000000 <g_seg_data>
- 378:	80c1a683          	lw	a3,-2036(gp) # 2000000c <disp_last_refresh.1>
- 37c:	8081c603          	lbu	a2,-2040(gp) # 20000008 <digit_state.0>
+ 2e4:	80c75683          	lhu	a3,-2036(a4)
+ 2e8:	8ed1                	or	a3,a3,a2
+ 2ea:	80d71623          	sh	a3,-2036(a4)
+ 2ee:	8081a683          	lw	a3,-2040(gp) # 20000008 <disp_last_refresh.1>
+ 2f2:	20000737          	lui	a4,0x20000
+ 2f6:	00474603          	lbu	a2,4(a4) # 20000004 <digit_state.0>
 		if(millis() - disp_last_refresh > DISPLAY_REFRESH_MILLIS)
- 380:	8101a703          	lw	a4,-2032(gp) # 20000010 <g_systick_millis>
- 384:	45a9                	li	a1,10
- 386:	8f15                	sub	a4,a4,a3
- 388:	fee5fce3          	bgeu	a1,a4,380 <main+0x14a>
+ 2fa:	80c1a703          	lw	a4,-2036(gp) # 2000000c <g_systick_millis>
+ 2fe:	4595                	li	a1,5
+ 300:	8f15                	sub	a4,a4,a3
+ 302:	fee5fce3          	bgeu	a1,a4,2fa <main+0x13a>
 	if(state == GPIO_LOW) mask = mask << 16;  // Shift by 16 if LOW, to Reset
- 38c:	00800737          	lui	a4,0x800
- 390:	c219                	beqz	a2,396 <main+0x160>
+ 306:	00800737          	lui	a4,0x800
+ 30a:	c219                	beqz	a2,310 <main+0x150>
 	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
- 392:	08000713          	li	a4,128
+ 30c:	08000713          	li	a4,128
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
- 396:	cb98                	sw	a4,16(a5)
- 398:	4c000593          	li	a1,1216
+ 310:	cb98                	sw	a4,16(a5)
+ 312:	40c00593          	li	a1,1036
 		gpio_digital_write(segment_pin[seg_idx], seg_bit);
- 39c:	4198                	lw	a4,0(a1)
- 39e:	4502                	lw	a0,0(sp)
+ 316:	4198                	lw	a4,0(a1)
+ 318:	4502                	lw	a0,0(sp)
 	for(uint16_t seg_idx = 0; seg_idx < 15; seg_idx++)
- 3a0:	0591                	addi	a1,a1,4
+ 31a:	0591                	addi	a1,a1,4
 	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
- 3a2:	00875693          	srli	a3,a4,0x8
+ 31c:	00875693          	srli	a3,a4,0x8
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
- 3a6:	0ff77713          	zext.b	a4,a4
- 3aa:	070a                	slli	a4,a4,0x2
- 3ac:	972a                	add	a4,a4,a0
- 3ae:	4318                	lw	a4,0(a4)
+ 320:	0ff77713          	zext.b	a4,a4
+ 324:	070a                	slli	a4,a4,0x2
+ 326:	972a                	add	a4,a4,a0
+ 328:	4318                	lw	a4,0(a4)
 	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
- 3b0:	00d416b3          	sll	a3,s0,a3
+ 32a:	00d416b3          	sll	a3,s0,a3
 	if(state == GPIO_LOW) mask = mask << 16;  // Shift by 16 if LOW, to Reset
- 3b4:	06c2                	slli	a3,a3,0x10
+ 32e:	06c2                	slli	a3,a3,0x10
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
- 3b6:	cb14                	sw	a3,16(a4)
- 3b8:	4fc00713          	li	a4,1276
- 3bc:	feb710e3          	bne	a4,a1,39c <main+0x166>
+ 330:	cb14                	sw	a3,16(a4)
+ 332:	44800713          	li	a4,1096
+ 336:	feb710e3          	bne	a4,a1,316 <main+0x156>
+	gpio_digital_write(digit_pin, digit_state);
+	
+	// Blank all the segments to prevent ghosting
+	disp_write(0x0000);
+	// Write the global segment data to the segment chosen
 	disp_write(g_seg_data[digit_state]);
- 3c0:	00161713          	slli	a4,a2,0x1
- 3c4:	00030693          	mv	a3,t1
- 3c8:	9736                	add	a4,a4,a3
- 3ca:	00075383          	lhu	t2,0(a4) # 800000 <lib_uart.c.a081860e+0x7fcfa5>
- 3ce:	4c000513          	li	a0,1216
- 3d2:	4581                	li	a1,0
+ 33a:	00161713          	slli	a4,a2,0x1
+ 33e:	00030693          	mv	a3,t1
+ 342:	9736                	add	a4,a4,a3
+ 344:	00075383          	lhu	t2,0(a4) # 800000 <lib_uart.c.02352773+0x7fcee7>
+ 348:	40c00513          	li	a0,1036
+ 34c:	4581                	li	a1,0
 		gpio_digital_write(segment_pin[seg_idx], seg_bit);
- 3d4:	4118                	lw	a4,0(a0)
+ 34e:	4118                	lw	a4,0(a0)
 		uint8_t seg_bit = (seg_data >> seg_idx) & 0x01;
- 3d6:	40b3d2b3          	sra	t0,t2,a1
+ 350:	40b3d2b3          	sra	t0,t2,a1
 	if(state == GPIO_LOW) mask = mask << 16;  // Shift by 16 if LOW, to Reset
- 3da:	0012f293          	andi	t0,t0,1
+ 354:	0012f293          	andi	t0,t0,1
 	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
- 3de:	00875693          	srli	a3,a4,0x8
- 3e2:	00d416b3          	sll	a3,s0,a3
+ 358:	00875693          	srli	a3,a4,0x8
+ 35c:	00d416b3          	sll	a3,s0,a3
 	if(state == GPIO_LOW) mask = mask << 16;  // Shift by 16 if LOW, to Reset
- 3e6:	00029363          	bnez	t0,3ec <main+0x1b6>
- 3ea:	06c2                	slli	a3,a3,0x10
+ 360:	00029363          	bnez	t0,366 <main+0x1a6>
+ 364:	06c2                	slli	a3,a3,0x10
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
- 3ec:	4282                	lw	t0,0(sp)
- 3ee:	0ff77713          	zext.b	a4,a4
- 3f2:	070a                	slli	a4,a4,0x2
- 3f4:	9716                	add	a4,a4,t0
- 3f6:	4318                	lw	a4,0(a4)
+ 366:	4282                	lw	t0,0(sp)
+ 368:	0ff77713          	zext.b	a4,a4
+ 36c:	070a                	slli	a4,a4,0x2
+ 36e:	9716                	add	a4,a4,t0
+ 370:	4318                	lw	a4,0(a4)
 	for(uint16_t seg_idx = 0; seg_idx < 15; seg_idx++)
- 3f8:	0585                	addi	a1,a1,1
- 3fa:	0511                	addi	a0,a0,4
- 3fc:	cb14                	sw	a3,16(a4)
- 3fe:	473d                	li	a4,15
- 400:	fce59ae3          	bne	a1,a4,3d4 <main+0x19e>
+ 372:	0585                	addi	a1,a1,1
+ 374:	0511                	addi	a0,a0,4
+ 376:	cb14                	sw	a3,16(a4)
+ 378:	473d                	li	a4,15
+ 37a:	fce59ae3          	bne	a1,a4,34e <main+0x18e>
 			disp_last_refresh = millis();
- 404:	8101a683          	lw	a3,-2032(gp) # 20000010 <g_systick_millis>
+ 37e:	80c1a683          	lw	a3,-2036(gp) # 2000000c <g_systick_millis>
+
+	// Invert the digit_state for the next loop
 	digit_state = !digit_state;
- 408:	00163613          	seqz	a2,a2
+ 382:	00163613          	seqz	a2,a2
 			disp_last_refresh = millis();
- 40c:	bf95                	j	380 <main+0x14a>
+ 386:	bf95                	j	2fa <main+0x13a>
 
-0000040e <SysTick_Handler>:
+00000388 <SysTick_Handler>:
 {
- 40e:	1151                	addi	sp,sp,-12
- 410:	c03e                	sw	a5,0(sp)
+ 388:	1151                	addi	sp,sp,-12
+ 38a:	c03e                	sw	a5,0(sp)
 	SysTick->CMP += SYSTICK_ONE_MILLISECOND;
- 412:	e000f7b7          	lui	a5,0xe000f
+ 38c:	e000f7b7          	lui	a5,0xe000f
 {
- 416:	c23a                	sw	a4,4(sp)
+ 390:	c23a                	sw	a4,4(sp)
 	SysTick->CMP += SYSTICK_ONE_MILLISECOND;
- 418:	4b98                	lw	a4,16(a5)
+ 392:	4b98                	lw	a4,16(a5)
 {
- 41a:	c436                	sw	a3,8(sp)
+ 394:	c436                	sw	a3,8(sp)
 	SysTick->CMP += SYSTICK_ONE_MILLISECOND;
- 41c:	66b1                	lui	a3,0xc
- 41e:	b8068693          	addi	a3,a3,-1152 # bb80 <lib_uart.c.a081860e+0x8b25>
- 422:	9736                	add	a4,a4,a3
- 424:	cb98                	sw	a4,16(a5)
+ 396:	66b1                	lui	a3,0xc
+ 398:	b8068693          	addi	a3,a3,-1152 # bb80 <lib_uart.c.02352773+0x8a67>
+ 39c:	9736                	add	a4,a4,a3
+ 39e:	cb98                	sw	a4,16(a5)
 	SysTick->SR = 0x00000000;
- 426:	0007a223          	sw	zero,4(a5) # e000f004 <__global_pointer$+0xc000e804>
+ 3a0:	0007a223          	sw	zero,4(a5) # e000f004 <__global_pointer$+0xc000e804>
 	g_systick_millis++;
- 42a:	8101a783          	lw	a5,-2032(gp) # 20000010 <g_systick_millis>
+ 3a4:	80c1a783          	lw	a5,-2036(gp) # 2000000c <g_systick_millis>
 }
- 42e:	46a2                	lw	a3,8(sp)
+ 3a8:	46a2                	lw	a3,8(sp)
 	g_systick_millis++;
- 430:	0785                	addi	a5,a5,1
- 432:	80f1a823          	sw	a5,-2032(gp) # 20000010 <g_systick_millis>
+ 3aa:	0785                	addi	a5,a5,1
+ 3ac:	80f1a623          	sw	a5,-2036(gp) # 2000000c <g_systick_millis>
 }
- 436:	4712                	lw	a4,4(sp)
- 438:	4782                	lw	a5,0(sp)
- 43a:	0131                	addi	sp,sp,12
- 43c:	30200073          	mret
+ 3b0:	4712                	lw	a4,4(sp)
+ 3b2:	4782                	lw	a5,0(sp)
+ 3b4:	0131                	addi	sp,sp,12
+ 3b6:	30200073          	mret
 
-00000440 <USART1_IRQHandler>:
+000003ba <USART1_IRQHandler>:
+/// UART Ring Buffer
+/// @param None
+/// @return None
+void USART1_IRQHandler(void) __attribute__((interrupt));
+void USART1_IRQHandler(void)
 {
- 440:	7179                	addi	sp,sp,-48
- 442:	c03e                	sw	a5,0(sp)
+ 3ba:	1151                	addi	sp,sp,-12
+ 3bc:	c03e                	sw	a5,0(sp)
 	if(USART1->STATR & USART_STATR_RXNE) 
- 444:	400147b7          	lui	a5,0x40014
+ 3be:	400147b7          	lui	a5,0x40014
+ 3c2:	80078793          	addi	a5,a5,-2048 # 40013800 <__global_pointer$+0x20013000>
 {
- 448:	c23a                	sw	a4,4(sp)
+ 3c6:	c23a                	sw	a4,4(sp)
 	if(USART1->STATR & USART_STATR_RXNE) 
- 44a:	8007d703          	lhu	a4,-2048(a5) # 40013800 <__global_pointer$+0x20013000>
+ 3c8:	0007d703          	lhu	a4,0(a5)
 {
- 44e:	d606                	sw	ra,44(sp)
- 450:	d416                	sw	t0,40(sp)
- 452:	d21a                	sw	t1,36(sp)
- 454:	d01e                	sw	t2,32(sp)
- 456:	ce22                	sw	s0,28(sp)
- 458:	cc26                	sw	s1,24(sp)
- 45a:	ca2a                	sw	a0,20(sp)
- 45c:	c82e                	sw	a1,16(sp)
- 45e:	c632                	sw	a2,12(sp)
- 460:	c436                	sw	a3,8(sp)
+ 3cc:	c436                	sw	a3,8(sp)
 	if(USART1->STATR & USART_STATR_RXNE) 
- 462:	02077713          	andi	a4,a4,32
- 466:	c715                	beqz	a4,492 <USART1_IRQHandler+0x52>
-		size_t next_head = (_uart_rx_buffer.head + 1) % _uart_rx_buffer.size;
- 468:	81418413          	addi	s0,gp,-2028 # 20000014 <_uart_rx_buffer>
+ 3ce:	02077713          	andi	a4,a4,32
+ 3d2:	cf11                	beqz	a4,3ee <USART1_IRQHandler+0x34>
+	{
+		// Read from the DATAR Register to reset the flag
 		uint8_t recv = (uint8_t)USART1->DATAR;
- 46c:	8047d483          	lhu	s1,-2044(a5)
-		size_t next_head = (_uart_rx_buffer.head + 1) % _uart_rx_buffer.size;
- 470:	4408                	lw	a0,8(s0)
- 472:	404c                	lw	a1,4(s0)
- 474:	80078793          	addi	a5,a5,-2048
- 478:	0505                	addi	a0,a0,1
- 47a:	39a9                	jal	d4 <__umodsi3>
-		if(next_head == _uart_rx_buffer.tail) 
- 47c:	445c                	lw	a5,12(s0)
-		uint8_t recv = (uint8_t)USART1->DATAR;
- 47e:	0ff4f493          	zext.b	s1,s1
-		if(next_head == _uart_rx_buffer.tail) 
- 482:	00f50863          	beq	a0,a5,492 <USART1_IRQHandler+0x52>
-		_uart_rx_buffer.buffer[_uart_rx_buffer.head] = recv;
- 486:	4418                	lw	a4,8(s0)
- 488:	401c                	lw	a5,0(s0)
-		_uart_rx_buffer.head = next_head;
- 48a:	c408                	sw	a0,8(s0)
-		_uart_rx_buffer.buffer[_uart_rx_buffer.head] = recv;
- 48c:	97ba                	add	a5,a5,a4
- 48e:	00978023          	sb	s1,0(a5)
+ 3d4:	0047d703          	lhu	a4,4(a5)
+ 3d8:	0742                	slli	a4,a4,0x10
+ 3da:	8341                	srli	a4,a4,0x10
+
+		// TODO: Transmit the data back out
+		while(!(USART1->STATR & USART_FLAG_TC));
+ 3dc:	0007d683          	lhu	a3,0(a5)
+ 3e0:	0406f693          	andi	a3,a3,64
+ 3e4:	dee5                	beqz	a3,3dc <USART1_IRQHandler+0x22>
+		USART1->DATAR = recv;
+ 3e6:	0ff77713          	zext.b	a4,a4
+ 3ea:	00e79223          	sh	a4,4(a5)
+
+	}
 }
- 492:	4472                	lw	s0,28(sp)
- 494:	50b2                	lw	ra,44(sp)
- 496:	52a2                	lw	t0,40(sp)
- 498:	5312                	lw	t1,36(sp)
- 49a:	5382                	lw	t2,32(sp)
- 49c:	44e2                	lw	s1,24(sp)
- 49e:	4552                	lw	a0,20(sp)
- 4a0:	45c2                	lw	a1,16(sp)
- 4a2:	4632                	lw	a2,12(sp)
- 4a4:	46a2                	lw	a3,8(sp)
- 4a6:	4712                	lw	a4,4(sp)
- 4a8:	4782                	lw	a5,0(sp)
- 4aa:	6145                	addi	sp,sp,48
- 4ac:	30200073          	mret
+ 3ee:	46a2                	lw	a3,8(sp)
+ 3f0:	4712                	lw	a4,4(sp)
+ 3f2:	4782                	lw	a5,0(sp)
+ 3f4:	0131                	addi	sp,sp,12
+ 3f6:	30200073          	mret
+	...
 
-000004b0 <GPIO_PORT_MAP>:
- 4b0:	40010800 00000000 40011000 40011400     ...@.......@...@
+000003fc <GPIO_PORT_MAP>:
+ 3fc:	40010800 00000000 40011000 40011400     ...@.......@...@
 
-000004c0 <segment_pin>:
- 4c0:	00000502 00000602 00000702 00000203     ................
- 4d0:	00000402 00000100 00000403 00000303     ................
- 4e0:	00000200 00000003 00000002 00000102     ................
- 4f0:	00000202 00000302 00000103              ............
+0000040c <segment_pin>:
+ 40c:	00000502 00000602 00000702 00000203     ................
+ 41c:	00000402 00000100 00000403 00000303     ................
+ 42c:	00000200 00000003 00000002 00000102     ................
+ 43c:	00000202 00000302 00000103              ............

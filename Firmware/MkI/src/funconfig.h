@@ -6,7 +6,7 @@
 // Enable/Disable overwriting of the RX Ring Buffer.
 // Enabled:  Incomming data will overwrite older data in the buffer
 // Disabled: Incomming data will not be added to the buffer until space is free
-// #define RX_RING_BUFFER_OVERWRITE
+#define RX_RING_BUFFER_OVERWRITE
 
 // NOTE: UART_ALTERNATE_1 will disable SWIO (PD1)
 //  Pinout        TX        RX        CTS        RTS

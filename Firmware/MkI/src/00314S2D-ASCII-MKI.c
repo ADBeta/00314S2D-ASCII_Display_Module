@@ -30,11 +30,7 @@
 volatile uint32_t g_systick_millis;
 
 // Display Data Array [0] = Left    [1] = Right
-uint16_t g_seg_data[2] = {ascii_font['K' - ' '], ascii_font[9]};
-
-// UART RX Ring Buffer
-#define UART_RING_BUFFER_SIZE 64
-static uint8_t g_uart_ring_buffer[UART_RING_BUFFER_SIZE];
+uint16_t g_seg_data[2];
 
 // Digit Pin
 static const GPIO_PIN digit_pin = GPIO_PD7;
@@ -86,21 +82,6 @@ static void disp_init(void);
 /// @return None
 static void disp_refresh(void);
 
-/// @brief Set the global display data from an input string of 2 chars
-/// @param char*, array of chars (2 chars)
-/// @return None
-__attribute__((always_inline))
-static inline void disp_set_string(const char *string);
-
-/// @brief Parse the received ASCII String, set data to be displayed, and data
-/// to be transmitted to the next display.
-
-
-
-
-
-
-
 /*** Main ********************************************************************/
 int main(void)
 {
@@ -122,17 +103,12 @@ int main(void)
 		.flowctrl    = UART_FLOWCTRL_NONE,
 	};
 
-	uart_init(g_uart_ring_buffer, UART_RING_BUFFER_SIZE, &uart_conf);
-
-
-
-	disp_set_string("Hi");
-
+	uart_init(&uart_conf);
 
 	// Display Refresh and UART Parsing loop
 	while(1)
 	{
-		// Refresh the display once per TODO:
+		// Refresh the display when the target millis are reached
 		static uint32_t disp_last_refresh = 0;
 		if(millis() - disp_last_refresh > DISPLAY_REFRESH_MILLIS)
 		{
@@ -140,19 +116,9 @@ int main(void)
 			disp_last_refresh = millis();
 		}
 		
-		// TODO: trigger or somehow set a flag to parse the UART Buffer if \n or \r were passed 
-
-
-
+		// An interrupt will handle all display setting. Only refresh in loop
 	}
-
-	return 0;
 }
-
-
-
-
-
 
 
 /*** Functions ***************************************************************/
@@ -249,17 +215,22 @@ static void disp_refresh(void)
 }
 
 
-static void disp_set_string(const char *string)
+/*** IRQ Handler for UART ****************************************************/
+/// @brief UART Receiver Interrupt handler - Puts the data received into the
+/// UART Ring Buffer
+/// @param None
+/// @return None
+void USART1_IRQHandler(void) __attribute__((interrupt));
+void USART1_IRQHandler(void)
 {
-	// Guard against null input
-	if(string == NULL) return;
+	if(USART1->STATR & USART_STATR_RXNE) 
+	{
+		// Read from the DATAR Register to reset the flag
+		uint8_t recv = (uint8_t)USART1->DATAR;
 
-	// Guard against chars being too low or high
-	// To convert ASCII char to its index in the font, minus 'space' (0x20)
-	// from the character
-	if(string[0] > 0x1F && string[0] < 0x7F)
-		g_seg_data[0] = ascii_font[ (string[0] - 0x20) ];
+		// TODO: Transmit the data back out
+		while(!(USART1->STATR & USART_FLAG_TC));
+		USART1->DATAR = recv;
 
-	if(string[1] > 0x1F && string[1] < 0x7F)
-		g_seg_data[1] = ascii_font[ (string[1] - 0x20) ];
+	}
 }

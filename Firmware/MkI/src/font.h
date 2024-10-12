@@ -4,7 +4,40 @@
 ******************************************************************************/
 
 /// @brief An enum table of all ASCII Control Bytes
-
+typedef enum {
+	ASCII_CONTROL_NULL                             = 0x00,
+	ASCII_CONTROL_START_HEADING                    = 0x01,
+	ASCII_CONTROL_START_TEXT                       = 0x02,
+	ASCII_CONTROL_END_TEXT                         = 0x03,
+	ASCII_CONTROL_END_TRANSMISSION                 = 0x04,
+	ASCII_CONTROL_ENQUIRY                          = 0x05,
+	ASCII_CONTROL_ACK                              = 0x06,
+	ASCII_CONTROL_BELL                             = 0x07,
+	ASCII_CONTROL_BACKSPACE                        = 0x08,
+	ASCII_CONTROL_HORIZ_TAB                        = 0x09,
+	ASCII_CONTROL_LINE_FEED                        = 0x0A,
+	ASCII_CONTROL_VERT_TAB                         = 0x0B,
+	ASCII_CONTROL_FORM_FEED                        = 0x0C,
+	ASCII_CONTROL_CARRIAGE_RETURN                  = 0x0D,
+	ASCII_CONTROL_SHIFT_OUT                        = 0x0E,
+	ASCII_CONTROL_SHIFT_IN                         = 0x0F,
+	ASCII_CONTROL_DATA_LINK_ESCAPE                 = 0x10,
+	ASCII_CONTROL_DEVICE_CONTROL_1                 = 0x11,
+	ASCII_CONTROL_DEVICE_CONTROL_2                 = 0x12,
+	ASCII_CONTROL_DEVICE_CONTROL_3                 = 0x13,
+	ASCII_CONTROL_DEVICE_CONTROL_4                 = 0x14,
+	ASCII_CONTROL_NACK                             = 0x15,
+	ASCII_CONTROL_SYNC_IDLE                        = 0x16,
+	ASCII_CONTROL_END_TRANSMISSION_BLOCK           = 0x17,
+	ASCII_CONTROL_CANCEL                           = 0x18,
+	ASCII_CONTROL_END_MEDIUM                       = 0x19,
+	ASCII_CONTROL_SUBSTITUTE                       = 0x1A,
+	ASCII_CONTROL_ESCAPE                           = 0x1B,
+	ASCII_CONTROL_FILE_SEPARATOR                   = 0x1C,
+	ASCII_CONTROL_GROUP_SEPARATOR                  = 0x1D,
+	ASCII_CONTROL_RECORD_SEPARATOR                 = 0x1E,
+	ASCII_CONTROL_UNIT_SEPARATOR                   = 0x1F,
+} ascii_control;
 
 
 /// @brief A font map for a 14 Segment LED Display.

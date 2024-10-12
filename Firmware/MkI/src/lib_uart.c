@@ -1,4 +1,7 @@
 /******************************************************************************
+* This is a modified version of lib_uart, to remove the ring buffer,
+* and incorperate the ISR into main.c
+*
 * lib_uart - A simple but full-featured library for UART on the CH32V003
 *
 * See GitHub for more information: 
@@ -35,64 +38,9 @@
 // UART was not able to init
 static bool _uart_init_ok = false;
 
-// UART RX Ring Buffer defined, gets set in uart_init()
-static _uart_buffer_t _uart_rx_buffer = {NULL, 0,0,0};
-
-
-/*** IRQ Handler for UART ****************************************************/
-/// @brief UART Receiver Interrupt handler - Puts the data received into the
-/// UART Ring Buffer
-/// @param None
-/// @return None
-void USART1_IRQHandler(void) __attribute__((interrupt));
-void USART1_IRQHandler(void)
-{
-	if(USART1->STATR & USART_STATR_RXNE) 
-	{
-		// Read from the DATAR Register to reset the flag
-		uint8_t recv = (uint8_t)USART1->DATAR;
-
-		// Calculate the next write position
-		size_t next_head = (_uart_rx_buffer.head + 1) % _uart_rx_buffer.size;
-
-		// If the next position is the same as the tail, either reject the new data
-		// or overwrite old data
-		if(next_head == _uart_rx_buffer.tail) 
-		{
-			#ifdef RX_RING_BUFFER_OVERWRITE
-				// Increment the tail position
-				 _uart_rx_buffer.tail = (_uart_rx_buffer.tail + 1) % _uart_rx_buffer.size;
-			#else
-				// Reject any data that overfills the buffer
-				return;
-			#endif
-		}
-
-		// Add the received data to the current head position
-		_uart_rx_buffer.buffer[_uart_rx_buffer.head] = recv;
-		// Update the head position
-		_uart_rx_buffer.head = next_head;
-	}
-}
-
 /*** Initialiser *************************************************************/
-uart_err_t uart_init( const uint8_t *rx_buffer_ptr,
-					  const uint32_t rx_buffer_size,
-					  const uart_config_t *conf     )
-{
-	// Make sure the input variables are valid.
-	if(rx_buffer_ptr == NULL || rx_buffer_size == 0 || conf == NULL)
-	{
-		_uart_init_ok = false;
-		return UART_NOT_INITIALIZED;
-	}
-
-	// Set up the RX Ring buffer Variables
-	_uart_rx_buffer.buffer = (uint8_t *)rx_buffer_ptr;
-	_uart_rx_buffer.size   = rx_buffer_size;
-	_uart_rx_buffer.head   = 0;
-	_uart_rx_buffer.tail   = 0;
-	
+uart_err_t uart_init(const uart_config_t *conf)
+{	
 	// Enable UART1 Clock
 	RCC->APB2PCENR |= RCC_APB2Periph_USART1;
 	// Enable the UART GPIO Port, and the Alternate Function IO Flag
@@ -185,31 +133,3 @@ uart_err_t uart_println(const char *string)
 
 	return ret_err;
 }
-
-
-/** Read *********************************************************************/
-size_t uart_read(uint8_t *buffer, size_t len)
-{
-	size_t bytes_read = 0;
-
-	// Make sure the buffer passed and length are valid
-	if(buffer != NULL && len != 0)
-	{
-		while(len--)
-		{
-			// If the buffer has no more data, return how many bytes were read
-			if(_uart_rx_buffer.head == _uart_rx_buffer.tail) break; 
-	
-			// Add the current tail byte to the buffer
-			*buffer++ = _uart_rx_buffer.buffer[_uart_rx_buffer.tail];
-			// Increment the ring buffer tail position
-			_uart_rx_buffer.tail = (_uart_rx_buffer.tail + 1) % _uart_rx_buffer.size;
-
-			// Increment the count of bytes
-			bytes_read++;
-		}
-	}
-
-	return bytes_read;
-}
-

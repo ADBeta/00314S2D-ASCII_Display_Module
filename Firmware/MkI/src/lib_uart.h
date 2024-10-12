@@ -1,4 +1,7 @@
 /******************************************************************************
+* This is a modified version of lib_uart, to remove the ring buffer,
+* and incorperate the ISR into main.c
+*
 * lib_uart - A simple but full-featured library for UART on the CH32V003
 *
 * See GitHub for more information: 
@@ -72,7 +75,7 @@ Alternate 3   PC0       PC1       PC6        PC7
 #define UART_AFIO_RESET_MASK ((uint32_t)0xFFDFFFFB)
 
 // Guard against no UART_PINOUT being defined. Default to _DEFAULT
-#if !defined(UART_PINOUT_DEFAULT) && \
+#if !defined(UART_PINOUT_DEFAULT)     && \
     !defined(UART_PINOUT_ALTERNATE_1) && \
     !defined(UART_PINOUT_ALTERNATE_2) && \
     !defined(UART_PINOUT_ALTERNATE_3)
@@ -232,25 +235,11 @@ typedef struct {
 } uart_config_t;
 
 
-/// @brief UART Ring Buffer Struct. Not user-modifyable. Only used internally
-typedef struct {
-	uint8_t   *buffer;
-	uint32_t  size;
-	volatile uint32_t  head;
-	volatile uint32_t  tail;
-} _uart_buffer_t;
-
-
 /*** Initialisers ************************************************************/
 /// @brief Initiliase the UART peripheral with the passed configuratiion.
-/// @param uint8_t *, pointer to the rx ring buffer
-/// @param uint32_t, size of the RX ring buffer
 /// @param uart_config_t, UART configuration
 /// @return uart_err_t, UART_NOT_INITIALIZED on error
-uart_err_t uart_init( const uint8_t *rx_buffer_ptr,
-					  const uint32_t rx_buffer_size,
-					  const uart_config_t *conf    
-);
+uart_err_t uart_init(const uart_config_t *conf);
 
 
 /*** Write *******************************************************************/
@@ -269,25 +258,5 @@ uart_err_t uart_print(const char *string);
 /// @param string, input c string to print
 /// @return uart_err_t status
 uart_err_t uart_println(const char *string);
-
-
-/** Read *********************************************************************/
-/// @brief reads len number of bytes from the RX Ring Buffer.
-/// @param *buffer, the buffer to read to
-/// @param len, the maximum number of bytes to read to the buffer
-/// @return size_t number of bytes read
-size_t uart_read(uint8_t *buffer, size_t len);
-
-/*
-/// @brief reads from the RX Ring Buffer until it finds a newline delimiter
-/// (\n or \r) then a non-delim char, or until it has read -len- bytes.
-/// Ring Buffer method is only enabled when RING_BUFFER_ENABLE is defined.
-/// @param *buffer, the buffer to read to
-/// @param len, the maximum number of bytes to read to the buffer
-/// @return size_t number of bytes read
-size_t uart_readln(uint8_t *buffer, size_t len)
-{
-}
-*/
 
 #endif
