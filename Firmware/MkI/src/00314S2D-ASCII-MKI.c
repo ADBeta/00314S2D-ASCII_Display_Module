@@ -23,7 +23,7 @@
 #define micros() (SysTick->CNT / SYSTICK_ONE_MICROSECOND)
 
 // Timing Variables
-#define DISPLAY_REFRESH_MILLIS 5
+#define DISPLAY_REFRESH_MILLIS 2
 
 /*** Globals *****************************************************************/
 // Incremented in the SysTick IRQ once per millisecond
@@ -236,7 +236,8 @@ void USART1_IRQHandler(void)
 		/*** Handle incomming chars ******************************************/
 		// Check if the received byte is a control char
 		// Newline and CR are treated the same
-		if(recv == ASCII_CONTROL_LINE_FEED || recv == ASCII_CONTROL_CARRIAGE_RETURN)
+		if(recv == ASCII_CONTROL_LINE_FEED || 
+		   recv == ASCII_CONTROL_CARRIAGE_RETURN)
 		{
 			// Clear displays and reset char counter
 			g_seg_data[0] = 0x0000;
@@ -249,7 +250,7 @@ void USART1_IRQHandler(void)
 		// NOTE: Add more control char beviour at this point
 		
 		// Any regular ASCII Char
-		} else if(recv <= 0x20 && recv >= 0x7E)
+		} else if(recv >= 0x20 && recv <= 0x7E)
 		{
 			// TODO:
 			// If a decimal point '.' is sent, append it to the last

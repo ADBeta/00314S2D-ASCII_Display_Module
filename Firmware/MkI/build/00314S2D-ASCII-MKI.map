@@ -4,9 +4,9 @@ build/00314S2D-ASCII-MKI.elf:     file format elf32-littleriscv
 SYMBOL TABLE:
 00000000 l    d  .init	00000000 .init
 000000a0 l    d  .text	00000000 .text
-00000574 l    d  .fini	00000000 .fini
+00000578 l    d  .fini	00000000 .fini
 20000000 l    d  .dalign	00000000 .dalign
-00000574 l    d  .dlalign	00000000 .dlalign
+00000578 l    d  .dlalign	00000000 .dlalign
 20000000 l    d  .data	00000000 .data
 20000000 l    d  .bss	00000000 .bss
 00000000 l    d  .riscv.attributes	00000000 .riscv.attributes
@@ -20,16 +20,16 @@ SYMBOL TABLE:
 00000000 l    d  .debug_line_str	00000000 .debug_line_str
 00000000 l    d  .debug_frame	00000000 .debug_frame
 000000a0 l     F .text	00000046 gpio_set_mode.constprop.0
-00000528 l     O .text	00000010 GPIO_PORT_MAP
+0000052c l     O .text	00000010 GPIO_PORT_MAP
 00000384 l     F .text	00000032 SysTick_Handler
-000003b6 l     F .text	000000b0 USART1_IRQHandler
+000003b6 l     F .text	000000b6 USART1_IRQHandler
 20000010 l     O .bss	00000004 g_systick_millis
-00000538 l     O .text	0000003c segment_pin
+0000053c l     O .text	0000003c segment_pin
 20000004 l     O .bss	00000004 g_seg_data
 2000000c l     O .bss	00000004 disp_last_refresh.2
 20000008 l     O .bss	00000001 digit_state.1
 20000000 l     O .bss	00000001 char_idx.0
-00000468 l     O .text	000000be ascii_font
+0000046c l     O .text	000000be ascii_font
 20000800 g       .data	00000000 __global_pointer$
 0000015c g     F .text	00000002 TIM1_CC_IRQHandler
 00001216  w      .debug_info	00000000 .hidden ch32v003fun.c.bbf629ef
@@ -39,12 +39,12 @@ SYMBOL TABLE:
 00000000 g     F .init	0000009c InterruptVectorDefault
 20000000 g       .bss	00000000 _sbss
 0000316b  w      .debug_info	00000000 .hidden lib_uart.c.02352773
+00002042  w      .debug_info	00000000 .hidden g00314S2D_ASCII_MKI.c.aba43106
 00000000 g     F .init	0000009c InterruptVector
 000000a0 g       .init	00000000 _einit
 0000015c g     F .text	00000002 SPI1_IRQHandler
 0000015c g     F .text	00000002 AWU_IRQHandler
 0000015c g     F .text	00000002 EXTI7_0_IRQHandler
-00002042  w      .debug_info	00000000 .hidden g00314S2D_ASCII_MKI.c.590cd274
 0000015c g     F .text	00000002 DMA1_Channel4_IRQHandler
 0000015c g     F .text	00000002 ADC1_IRQHandler
 20000014 g       .bss	00000000 _ebss
@@ -69,7 +69,7 @@ SYMBOL TABLE:
 0000015c g     F .text	00000002 SW_Handler
 0000015c g     F .text	00000002 TIM1_BRK_IRQHandler
 20000000 g       .data	00000000 _edata
-00000574 g       .dlalign	00000000 _data_lma
+00000578 g       .dlalign	00000000 _data_lma
 0000015c g     F .text	00000002 DMA1_Channel2_IRQHandler
 000000e6 g     F .text	00000076 handle_reset
 0000015c g     F .text	00000002 FLASH_IRQHandler

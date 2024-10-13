@@ -67,7 +67,7 @@ Disassembly of section .text:
 	// Clear then set the GPIO Config Register
 	GPIO_PORT_MAP[ byte[0] ]->CFGLR &=        ~(0x0F  << (4 * byte[1]));
   b8:	070a                	slli	a4,a4,0x2
-  ba:	52800793          	li	a5,1320
+  ba:	52c00793          	li	a5,1324
   be:	97ba                	add	a5,a5,a4
   c0:	4398                	lw	a4,0(a5)
   c2:	8119                	srli	a0,a0,0x6
@@ -122,7 +122,7 @@ asm volatile(
  11c:	c110                	sw	a2,0(a0)
  11e:	0511                	addi	a0,a0,4
  120:	feb54ee3          	blt	a0,a1,11c <handle_reset+0x36>
- 124:	57400513          	li	a0,1396
+ 124:	57800513          	li	a0,1400
  128:	20000597          	auipc	a1,0x20000
  12c:	ed858593          	addi	a1,a1,-296 # 20000000 <char_idx.0>
  130:	20000617          	auipc	a2,0x20000
@@ -290,7 +290,7 @@ RV_STATIC_INLINE void NVIC_EnableIRQ(IRQn_Type IRQn)
  200:	4798                	lw	a4,8(a5)
  202:	8f15                	sub	a4,a4,a3
  204:	fe074ee3          	bltz	a4,200 <main+0x40>
- 208:	53800793          	li	a5,1336
+ 208:	53c00793          	li	a5,1340
 	// TODO: Using FLASH, set the option bit to dsiable the NRST Pin
 
 	// Set all Segment GPIO to OUTPUT, LOW
@@ -312,7 +312,7 @@ inline void gpio_digital_write(const GPIO_PIN pin, const GPIO_STATE state)
 	if(state == GPIO_LOW) mask = mask << 16;  // Shift by 16 if LOW, to Reset
 
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
- 218:	52800693          	li	a3,1320
+ 218:	52c00693          	li	a3,1324
 	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
  21c:	00855713          	srli	a4,a0,0x8
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
@@ -328,10 +328,10 @@ inline void gpio_digital_write(const GPIO_PIN pin, const GPIO_STATE state)
  230:	4792                	lw	a5,4(sp)
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
  232:	ca98                	sw	a4,16(a3)
- 234:	52800713          	li	a4,1320
+ 234:	52c00713          	li	a4,1324
  238:	c03a                	sw	a4,0(sp)
  23a:	0791                	addi	a5,a5,4
- 23c:	57400713          	li	a4,1396
+ 23c:	57800713          	li	a4,1400
  240:	fcf716e3          	bne	a4,a5,20c <main+0x4c>
 		gpio_digital_write(segment_pin[seg_pin], GPIO_LOW);
 	}
@@ -435,7 +435,7 @@ uart_err_t uart_init(const uart_config_t *conf)
  2f2:	8081c603          	lbu	a2,-2040(gp) # 20000008 <digit_state.1>
 		if(millis() - disp_last_refresh > DISPLAY_REFRESH_MILLIS)
  2f6:	8101a703          	lw	a4,-2032(gp) # 20000010 <g_systick_millis>
- 2fa:	4595                	li	a1,5
+ 2fa:	4589                	li	a1,2
  2fc:	8f15                	sub	a4,a4,a3
  2fe:	fee5fce3          	bgeu	a1,a4,2f6 <main+0x136>
 	if(state == GPIO_LOW) mask = mask << 16;  // Shift by 16 if LOW, to Reset
@@ -445,7 +445,7 @@ uart_err_t uart_init(const uart_config_t *conf)
  308:	08000713          	li	a4,128
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
  30c:	cb98                	sw	a4,16(a5)
- 30e:	53800593          	li	a1,1336
+ 30e:	53c00593          	li	a1,1340
 		gpio_digital_write(segment_pin[seg_idx], seg_bit);
  312:	4198                	lw	a4,0(a1)
  314:	4502                	lw	a0,0(sp)
@@ -464,7 +464,7 @@ uart_err_t uart_init(const uart_config_t *conf)
  32a:	06c2                	slli	a3,a3,0x10
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
  32c:	cb14                	sw	a3,16(a4)
- 32e:	57400713          	li	a4,1396
+ 32e:	57800713          	li	a4,1400
  332:	feb710e3          	bne	a4,a1,312 <main+0x152>
 	gpio_digital_write(digit_pin, digit_state);
 	
@@ -476,7 +476,7 @@ uart_err_t uart_init(const uart_config_t *conf)
  33a:	00430693          	addi	a3,t1,4
  33e:	9736                	add	a4,a4,a3
  340:	00075383          	lhu	t2,0(a4) # 800000 <lib_uart.c.02352773+0x7fce95>
- 344:	53800513          	li	a0,1336
+ 344:	53c00513          	li	a0,1340
  348:	4581                	li	a1,0
 		gpio_digital_write(segment_pin[seg_idx], seg_bit);
  34a:	4118                	lw	a4,0(a0)
@@ -564,109 +564,108 @@ void USART1_IRQHandler(void)
  3c8:	c436                	sw	a3,8(sp)
 	if(USART1->STATR & USART_STATR_RXNE) 
  3ca:	02077713          	andi	a4,a4,32
- 3ce:	c741                	beqz	a4,456 <USART1_IRQHandler+0xa0>
+ 3ce:	c759                	beqz	a4,45c <USART1_IRQHandler+0xa6>
  3d0:	80078793          	addi	a5,a5,-2048
-		// to the next display
 		static uint8_t char_idx = 0;
 		bool echo_flag = 0;
+
 
 		// Read from the DATAR Register to reset the flag
 		uint8_t recv = (uint8_t)USART1->DATAR;
  3d4:	0047d783          	lhu	a5,4(a5)
 
-		// Handle incomming chars
-		switch(recv) 
- 3d8:	4735                	li	a4,13
+		/*** Handle incomming chars ******************************************/
+		// Check if the received byte is a control char
+		// Newline and CR are treated the same
+		if(recv == ASCII_CONTROL_LINE_FEED || 
+ 3d8:	46a9                	li	a3,10
 		uint8_t recv = (uint8_t)USART1->DATAR;
- 3da:	01079613          	slli	a2,a5,0x10
+ 3da:	01079713          	slli	a4,a5,0x10
  3de:	0ff7f793          	zext.b	a5,a5
- 3e2:	8241                	srli	a2,a2,0x10
-		switch(recv) 
- 3e4:	00e78963          	beq	a5,a4,3f6 <USART1_IRQHandler+0x40>
- 3e8:	02e00713          	li	a4,46
- 3ec:	06e78563          	beq	a5,a4,456 <USART1_IRQHandler+0xa0>
- 3f0:	4729                	li	a4,10
- 3f2:	02e79863          	bne	a5,a4,422 <USART1_IRQHandler+0x6c>
-		{	
-			// Handle \n and \r the same way
-			case ASCII_CONTROL_LINE_FEED:
-			case ASCII_CONTROL_CARRIAGE_RETURN:
-				// Clear displays and reset char counter. TODO: Set echo forward
-				g_seg_data[0] = 0x0000;
+ 3e2:	8341                	srli	a4,a4,0x10
+		if(recv == ASCII_CONTROL_LINE_FEED || 
+ 3e4:	00d78563          	beq	a5,a3,3ee <USART1_IRQHandler+0x38>
+ 3e8:	46b5                	li	a3,13
+ 3ea:	02d79863          	bne	a5,a3,41a <USART1_IRQHandler+0x64>
+		   recv == ASCII_CONTROL_CARRIAGE_RETURN)
+		{
+			// Clear displays and reset char counter
+			g_seg_data[0] = 0x0000;
+ 3ee:	200007b7          	lui	a5,0x20000
+ 3f2:	0007a223          	sw	zero,4(a5) # 20000004 <g_seg_data>
+			g_seg_data[1] = 0x0000;
+			char_idx = 0;
  3f6:	200007b7          	lui	a5,0x20000
- 3fa:	0007a223          	sw	zero,4(a5) # 20000004 <g_seg_data>
-				g_seg_data[1] = 0x0000;
-				char_idx = 0;
- 3fe:	200007b7          	lui	a5,0x20000
- 402:	00078023          	sb	zero,0(a5) # 20000000 <char_idx.0>
-		}
+ 3fa:	00078023          	sb	zero,0(a5) # 20000000 <char_idx.0>
 
-		
+
+		// Transmit the received byte if the flag is set
 		if(echo_flag)
 		{
 			while(!(USART1->STATR & USART_FLAG_TC));
- 406:	400147b7          	lui	a5,0x40014
- 40a:	80078793          	addi	a5,a5,-2048 # 40013800 <__global_pointer$+0x20013000>
- 40e:	0007d683          	lhu	a3,0(a5)
- 412:	0406f693          	andi	a3,a3,64
- 416:	dee5                	beqz	a3,40e <USART1_IRQHandler+0x58>
+ 3fe:	400147b7          	lui	a5,0x40014
+ 402:	80078793          	addi	a5,a5,-2048 # 40013800 <__global_pointer$+0x20013000>
+ 406:	0007d683          	lhu	a3,0(a5)
+ 40a:	0406f693          	andi	a3,a3,64
+ 40e:	dee5                	beqz	a3,406 <USART1_IRQHandler+0x50>
 			USART1->DATAR = recv;
- 418:	0ff67713          	zext.b	a4,a2
- 41c:	00e79223          	sh	a4,4(a5)
+ 410:	0ff77713          	zext.b	a4,a4
+ 414:	00e79223          	sh	a4,4(a5)
 		}
-		
 	}
 }
- 420:	a81d                	j	456 <USART1_IRQHandler+0xa0>
-				if(char_idx < 2)
- 422:	200005b7          	lui	a1,0x20000
- 426:	0005c703          	lbu	a4,0(a1) # 20000000 <char_idx.0>
- 42a:	4685                	li	a3,1
- 42c:	fce6ede3          	bltu	a3,a4,406 <USART1_IRQHandler+0x50>
-					g_seg_data[char_idx] = ascii_font[recv - 0x20];
- 430:	200006b7          	lui	a3,0x20000
- 434:	00171613          	slli	a2,a4,0x1
- 438:	00468693          	addi	a3,a3,4 # 20000004 <g_seg_data>
- 43c:	9636                	add	a2,a2,a3
- 43e:	1781                	addi	a5,a5,-32
- 440:	0786                	slli	a5,a5,0x1
- 442:	46800693          	li	a3,1128
- 446:	97b6                	add	a5,a5,a3
- 448:	0007d783          	lhu	a5,0(a5)
-					char_idx++;
- 44c:	0705                	addi	a4,a4,1
- 44e:	00e58023          	sb	a4,0(a1)
-					g_seg_data[char_idx] = ascii_font[recv - 0x20];
- 452:	00f61023          	sh	a5,0(a2) # 2000 <ch32v003fun.c.bbf629ef+0xdea>
+ 418:	a091                	j	45c <USART1_IRQHandler+0xa6>
+		} else if(recv >= 0x20 && recv <= 0x7E)
+ 41a:	1781                	addi	a5,a5,-32
+ 41c:	0ff7f613          	zext.b	a2,a5
+ 420:	05e00693          	li	a3,94
+ 424:	02c6ec63          	bltu	a3,a2,45c <USART1_IRQHandler+0xa6>
+			if(char_idx < 2)
+ 428:	200005b7          	lui	a1,0x20000
+ 42c:	0005c683          	lbu	a3,0(a1) # 20000000 <char_idx.0>
+ 430:	4605                	li	a2,1
+ 432:	fcd666e3          	bltu	a2,a3,3fe <USART1_IRQHandler+0x48>
+				g_seg_data[char_idx] = ascii_font[recv - 0x20];
+ 436:	20000737          	lui	a4,0x20000
+ 43a:	00470713          	addi	a4,a4,4 # 20000004 <g_seg_data>
+ 43e:	00169613          	slli	a2,a3,0x1
+ 442:	963a                	add	a2,a2,a4
+ 444:	0786                	slli	a5,a5,0x1
+ 446:	46c00713          	li	a4,1132
+ 44a:	973e                	add	a4,a4,a5
+ 44c:	00075783          	lhu	a5,0(a4)
+ 450:	00f61023          	sh	a5,0(a2) # 2000 <ch32v003fun.c.bbf629ef+0xdea>
+				char_idx++;
+ 454:	00168793          	addi	a5,a3,1
+ 458:	00f58023          	sb	a5,0(a1)
 }
- 456:	45c2                	lw	a1,16(sp)
- 458:	4632                	lw	a2,12(sp)
- 45a:	46a2                	lw	a3,8(sp)
- 45c:	4712                	lw	a4,4(sp)
- 45e:	4782                	lw	a5,0(sp)
- 460:	0151                	addi	sp,sp,20
- 462:	30200073          	mret
-	...
+ 45c:	45c2                	lw	a1,16(sp)
+ 45e:	4632                	lw	a2,12(sp)
+ 460:	46a2                	lw	a3,8(sp)
+ 462:	4712                	lw	a4,4(sp)
+ 464:	4782                	lw	a5,0(sp)
+ 466:	0151                	addi	sp,sp,20
+ 468:	30200073          	mret
 
-00000468 <ascii_font>:
- 468:	40060000 12ce0202 242412ed 020009db     ...@......$$....
- 478:	000f0039 12c03fc0 00c02000 24004000     9....?... ...@.$
- 488:	0406243f 008f00db 00ed00e6 240100fd     ?$.............$
- 498:	00e700ff 22001200 00c80c00 50a32100     .......".....!.P
- 4a8:	00f702bb 0039128f 0079120f 00bd0071     ......9...y.q...
- 4b8:	120900f6 0c70001e 05360038 003f0936     ......p.8.6.6.?.
- 4c8:	083f00f3 00ed08f3 003e1201 28362430     ..?.......>.0$6(
- 4d8:	00ee2d00 00392409 000f0900 00082800     .-...$9......(..
- 4e8:	00df0100 00d80878 2058208e 048e14c0     ....x.... X ....
- 4f8:	10001070 1e002210 10d40030 00dc1050     p...."..0...P...
- 508:	04860170 08880050 001c0078 28142010     p...P...x.... .(
- 518:	028e2d00 21492048 0c891200 000024c0     .-..H I!.....$..
+0000046c <ascii_font>:
+ 46c:	40060000 12ce0202 242412ed 020009db     ...@......$$....
+ 47c:	000f0039 12c03fc0 00c02000 24004000     9....?... ...@.$
+ 48c:	0406243f 008f00db 00ed00e6 240100fd     ?$.............$
+ 49c:	00e700ff 22001200 00c80c00 50a32100     .......".....!.P
+ 4ac:	00f702bb 0039128f 0079120f 00bd0071     ......9...y.q...
+ 4bc:	120900f6 0c70001e 05360038 003f0936     ......p.8.6.6.?.
+ 4cc:	083f00f3 00ed08f3 003e1201 28362430     ..?.......>.0$6(
+ 4dc:	00ee2d00 00392409 000f0900 00082800     .-...$9......(..
+ 4ec:	10580100 00d80878 2058208e 048e14c0     ..X.x.... X ....
+ 4fc:	10001070 1e002210 10d40030 00dc1050     p...."..0...P...
+ 50c:	04860170 08880050 001c0078 28142010     p...P...x.... .(
+ 51c:	028e2d00 21492048 0c891200 000024c0     .-..H I!.....$..
 
-00000528 <GPIO_PORT_MAP>:
- 528:	40010800 00000000 40011000 40011400     ...@.......@...@
+0000052c <GPIO_PORT_MAP>:
+ 52c:	40010800 00000000 40011000 40011400     ...@.......@...@
 
-00000538 <segment_pin>:
- 538:	00000502 00000602 00000702 00000203     ................
- 548:	00000402 00000100 00000403 00000303     ................
- 558:	00000200 00000003 00000002 00000102     ................
- 568:	00000202 00000302 00000103              ............
+0000053c <segment_pin>:
+ 53c:	00000502 00000602 00000702 00000203     ................
+ 54c:	00000402 00000100 00000403 00000303     ................
+ 55c:	00000200 00000003 00000002 00000102     ................
+ 56c:	00000202 00000302 00000103              ............

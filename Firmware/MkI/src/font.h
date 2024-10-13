@@ -109,7 +109,7 @@ static const uint16_t ascii_font[] = {
 	0x2800,    // ^
 	0x0008,    // _
 	0x0100,    // `
-	0x00DF,    // a
+	0x1058,    // a
 	0x0878,    // b
 	0x00D8,    // c
 	0x208E,    // d
