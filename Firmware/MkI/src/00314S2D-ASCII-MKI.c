@@ -103,7 +103,7 @@ int main(void)
 		.flowctrl    = UART_FLOWCTRL_NONE,
 	};
 
-	uart_init(&uart_conf);
+	uart_init(&uart_conf);	
 
 	// Display Refresh and UART Parsing loop
 	while(1)
@@ -215,7 +215,7 @@ static void disp_refresh(void)
 }
 
 
-/*** IRQ Handler for UART ****************************************************/
+/*** IRQHandler for UART ****************************************************/
 /// @brief UART Receiver Interrupt handler - Puts the data received into the
 /// UART Ring Buffer
 /// @param None
@@ -225,12 +225,53 @@ void USART1_IRQHandler(void)
 {
 	if(USART1->STATR & USART_STATR_RXNE) 
 	{
+		// Set 2 chars on this display, after that echo to the next display.
+		static uint8_t char_idx = 0;
+		bool echo_flag = 0;
+
+
 		// Read from the DATAR Register to reset the flag
 		uint8_t recv = (uint8_t)USART1->DATAR;
 
-		// TODO: Transmit the data back out
-		while(!(USART1->STATR & USART_FLAG_TC));
-		USART1->DATAR = recv;
+		/*** Handle incomming chars ******************************************/
+		// Check if the received byte is a control char
+		// Newline and CR are treated the same
+		if(recv == ASCII_CONTROL_LINE_FEED || recv == ASCII_CONTROL_CARRIAGE_RETURN)
+		{
+			// Clear displays and reset char counter
+			g_seg_data[0] = 0x0000;
+			g_seg_data[1] = 0x0000;
+			char_idx = 0;
 
+			// Mark this byte to be echoed forward
+			echo_flag = true;
+
+		// NOTE: Add more control char beviour at this point
+		
+		// Any regular ASCII Char
+		} else if(recv <= 0x20 && recv >= 0x7E)
+		{
+			// TODO:
+			// If a decimal point '.' is sent, append it to the last
+			// char, without incrimenting index
+
+			if(char_idx < 2)
+			{
+				// Set the corresponding char with the received data
+				g_seg_data[char_idx] = ascii_font[recv - 0x20];
+				char_idx++;
+			} else {
+				// Set flag to re-transmit the received data
+				echo_flag = true;
+			}
+		}
+
+
+		// Transmit the received byte if the flag is set
+		if(echo_flag)
+		{
+			while(!(USART1->STATR & USART_FLAG_TC));
+			USART1->DATAR = recv;
+		}
 	}
 }
