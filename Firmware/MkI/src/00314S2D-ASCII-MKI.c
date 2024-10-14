@@ -1,13 +1,21 @@
 /******************************************************************************
 * 00314S2D-ASCII MkI
 * A 2 Digit, 14 Segment Display Module using the CH32V003 MCU.
-* For more information see the GitHub:
-*
+* For more information see the GitHub: 
+* https://github.com/ADBeta/00314S2D-ASCII_Display_Module
 *
 * Functional Description:
-* 
+* Each board Receives data via RX, and transmits it via TX at 115200 Baud
+* When receiving data, each unit refils its internal display buffer, when it 
+* is full, any incoming data is echoed directly to TX down the chain - due to
+* this you can have a theoretically infinte number of displays 
 *
-* 
+* When power is applied, a self check takes place to look for the presense of
+* a WCHLink programmer - if SWIO is asserted HIGH, a programmer is present,
+* and the deivce will boot into a blank waiting mode to be programmed.
+* - if the SWIO pin is left open, it boots into regular display mode
+*
+* Ver 0.1    14 Oct 2024 
 * ADBeta (c) 2024
 ******************************************************************************/
 #include "ch32v003fun.h"
@@ -64,7 +72,9 @@ static void systick_init(void);
 /// @param none
 /// @return none
 __attribute__((interrupt))
-void SysTick_Handler(void); 
+void SysTick_Handler(void);
+
+static void detect_programmer(void);
 
 /// @brief Sets all segments in the display
 /// @param uint16_t segment bits
@@ -88,10 +98,10 @@ int main(void)
 	SystemInit();
 	systick_init();
 
-	// NOTE: Development Phase delay to allow re-programming
-	Delay_Ms(500);
-
-	// Initialise the display
+	// Checks if the SWIO Porgramming pin is connected. Waits forever if so 
+	detect_programmer();
+	
+	// Initialise the display. Disables SWIO
 	disp_init();
 	
 	// Setup and Initialise UART (Default Pinout)
@@ -159,6 +169,21 @@ void SysTick_Handler(void)
 	g_systick_millis++;
 }
 
+static void detect_programmer(void)
+{
+	// Set PD1 (SWIO) to INPUT_PULLDOWN - the programmer pulls HIGH
+	gpio_set_mode(GPIO_PD1, INPUT_PULLDOWN);
+	// Wait for line to settle
+	Delay_Ms(100);
+	// Detect the SWIO pins' state
+	if(gpio_digital_read(GPIO_PD1) == GPIO_HIGH)
+	{
+		// Stop pulling SWIO so programming can happen
+		gpio_set_mode(GPIO_PD1, INPUT_FLOATING);
+		// Wait
+		while(1) { }
+	}
+}
 
 __attribute__((always_inline))
 static inline void disp_write(const uint16_t seg_data)
@@ -173,10 +198,9 @@ static inline void disp_write(const uint16_t seg_data)
 
 static void disp_init(void)
 {
-	// TODO: Re-enable this later
 	// Enable Alternate GPIO Funtionality and disable SWIO
-	//RCC->APB2PCENR |= RCC_APB2Periph_AFIO;
-	//AFIO->PCFR1    |= 0x04000000;
+	RCC->APB2PCENR |= RCC_APB2Periph_AFIO;
+	AFIO->PCFR1    |= 0x04000000;
 
 	// TODO: Using FLASH, set the option bit to dsiable the NRST Pin
 
@@ -202,11 +226,12 @@ static void disp_refresh(void)
 	// Display Selection Pin state. 0 = Left    1 = Right 
 	static uint8_t digit_state = 0;
 
+	// Blank all the segments to prevent ghosting
+	disp_write(0x0000);
+
 	// Write the current digit state
 	gpio_digital_write(digit_pin, digit_state);
 	
-	// Blank all the segments to prevent ghosting
-	disp_write(0x0000);
 	// Write the global segment data to the segment chosen
 	disp_write(g_seg_data[digit_state]);
 
@@ -252,10 +277,6 @@ void USART1_IRQHandler(void)
 		// Any regular ASCII Char
 		} else if(recv >= 0x20 && recv <= 0x7E)
 		{
-			// TODO:
-			// If a decimal point '.' is sent, append it to the last
-			// char, without incrimenting index
-
 			if(char_idx < 2)
 			{
 				// Set the corresponding char with the received data
