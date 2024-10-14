@@ -14,10 +14,10 @@ chain of displays.
 ## Building a Module
 BOM
 ```
-RN1        150R 4*0603 Resistor Array
-RN2        150R 4*0603 Resistor Array
-RN3        150R 4*0603 Resistor Array
-RN4        150R 4*0603 Resistor Array
+RN1        330R 4*0603 Resistor Array
+RN2        330R 4*0603 Resistor Array
+RN3        330R 4*0603 Resistor Array
+RN4        330R 4*0603 Resistor Array
 R1         10R 0603
 R2         2K2 0603
 Q1         AO3400 N-Ch MOSFET SOT-23
@@ -30,9 +30,9 @@ DISP1      Red/Green/Blue 14 Segment 2 Digit Common Cathode Display
 ```
 
 Programming is done via the SWIO TestPoint on the back of the PCB.
-Once programmed, the module can be re-programmed by TODO
-
-## TODO
+Once programmed, SWIO is disabled to be used as a normal GPIO.
+To Reprogram the deivce, connect a programmer to the SWIO pin, and
+power cycle the device - this will put the device into program mode.
 
 ----
 MIT License
