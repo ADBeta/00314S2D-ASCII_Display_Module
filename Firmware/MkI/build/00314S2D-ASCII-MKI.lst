@@ -16,7 +16,7 @@ void InterruptVectorDefault()
    8:	0000016e          	.word	0x0000016e
    c:	0000016c          	.word	0x0000016c
 	...
-  30:	000003d4          	.word	0x000003d4
+  30:	000003d6          	.word	0x000003d6
   34:	00000000          	.word	0x00000000
   38:	0000016c          	.word	0x0000016c
   3c:	00000000          	.word	0x00000000
@@ -36,7 +36,7 @@ void InterruptVectorDefault()
   74:	0000016c          	.word	0x0000016c
   78:	0000016c          	.word	0x0000016c
   7c:	0000016c          	.word	0x0000016c
-  80:	00000406          	.word	0x00000406
+  80:	00000408          	.word	0x00000408
   84:	0000016c          	.word	0x0000016c
   88:	0000016c          	.word	0x0000016c
   8c:	0000016c          	.word	0x0000016c
@@ -67,7 +67,7 @@ Disassembly of section .text:
 	// Clear then set the GPIO Config Register
 	GPIO_PORT_MAP[ byte[0] ]->CFGLR &=        ~(0x0F  << (4 * byte[1]));
   b8:	070a                	slli	a4,a4,0x2
-  ba:	57c00793          	li	a5,1404
+  ba:	58000793          	li	a5,1408
   be:	97ba                	add	a5,a5,a4
   c0:	4394                	lw	a3,0(a5)
   c2:	8121                	srli	a0,a0,0x8
@@ -135,7 +135,7 @@ asm volatile(
  12c:	c110                	sw	a2,0(a0)
  12e:	0511                	addi	a0,a0,4
  130:	feb54ee3          	blt	a0,a1,12c <handle_reset+0x36>
- 134:	5c800513          	li	a0,1480
+ 134:	5cc00513          	li	a0,1484
  138:	20000597          	auipc	a1,0x20000
  13c:	ec858593          	addi	a1,a1,-312 # 20000000 <char_idx.0>
  140:	20000617          	auipc	a2,0x20000
@@ -197,7 +197,7 @@ asm volatile(
 		RCC->CFGR0 = BASE_CFGR0;
  18c:	0007a223          	sw	zero,4(a5) # 40021004 <__global_pointer$+0x20020804>
 		RCC->CTLR  = BASE_CTLR | RCC_HSION | RCC_PLLON; 			// Use HSI, enable PLL.
- 190:	08170713          	addi	a4,a4,129 # 1080081 <lib_uart.c.02352773+0x107cdb0>
+ 190:	08170713          	addi	a4,a4,129 # 1080081 <lib_uart.c.02352773+0x107cdab>
  194:	c398                	sw	a4,0(a5)
 	#else
 		FLASH->ACTLR = FLASH_ACTLR_LATENCY_1;       		// +1 Cycle Latency
@@ -269,7 +269,7 @@ static void systick_init(void)
 	SysTick->CTLR = 0x0000;
  1e0:	0004a023          	sw	zero,0(s1) # e000f000 <__global_pointer$+0xc000e800>
 	SysTick->CMP = SYSTICK_ONE_MILLISECOND - 1;
- 1e4:	b7f78793          	addi	a5,a5,-1153 # bb7f <lib_uart.c.02352773+0x88ae>
+ 1e4:	b7f78793          	addi	a5,a5,-1153 # bb7f <lib_uart.c.02352773+0x88a9>
  1e8:	c89c                	sw	a5,16(s1)
 
 	// Reset the Count Register, and the global millis counter to 0
@@ -308,7 +308,7 @@ static void detect_programmer(void)
 	uint32_t targend = SysTick->CNT + n;
  20c:	4498                	lw	a4,8(s1)
  20e:	000927b7          	lui	a5,0x92
- 212:	7c078793          	addi	a5,a5,1984 # 927c0 <lib_uart.c.02352773+0x8f4ef>
+ 212:	7c078793          	addi	a5,a5,1984 # 927c0 <lib_uart.c.02352773+0x8f4ea>
  216:	973e                	add	a4,a4,a5
 	while( ((int32_t)( SysTick->CNT - targend )) < 0 );
  218:	449c                	lw	a5,8(s1)
@@ -324,7 +324,7 @@ static void detect_programmer(void)
  224:	40078793          	addi	a5,a5,1024 # 40011400 <__global_pointer$+0x20010c00>
  228:	479c                	lw	a5,8(a5)
  22a:	8b89                	andi	a5,a5,2
- 22c:	18079f63          	bnez	a5,3ca <main+0x1fa>
+ 22c:	1a079063          	bnez	a5,3cc <main+0x1fc>
 
 
 static void disp_init(void)
@@ -343,7 +343,7 @@ static void disp_init(void)
  244:	435c                	lw	a5,4(a4)
  246:	8fd5                	or	a5,a5,a3
  248:	c35c                	sw	a5,4(a4)
- 24a:	58c00793          	li	a5,1420
+ 24a:	59000793          	li	a5,1424
 	// TODO: Using FLASH, set the option bit to dsiable the NRST Pin
 
 	// Set all Segment GPIO to OUTPUT, LOW
@@ -358,7 +358,7 @@ static void disp_init(void)
 	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
  258:	4502                	lw	a0,0(sp)
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
- 25a:	57c00693          	li	a3,1404
+ 25a:	58000693          	li	a3,1408
 	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
  25e:	00855713          	srli	a4,a0,0x8
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
@@ -375,10 +375,10 @@ static void disp_init(void)
  274:	4792                	lw	a5,4(sp)
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
  276:	ca98                	sw	a4,16(a3)
- 278:	57c00713          	li	a4,1404
+ 278:	58000713          	li	a4,1408
  27c:	c03a                	sw	a4,0(sp)
  27e:	0791                	addi	a5,a5,4
- 280:	5c800713          	li	a4,1480
+ 280:	5cc00713          	li	a4,1484
  284:	fcf715e3          	bne	a4,a5,24e <main+0x7e>
 		gpio_digital_write(segment_pin[seg_pin], GPIO_LOW);
 	}
@@ -483,243 +483,244 @@ uart_err_t uart_init(const uart_config_t *conf)
  338:	8081c603          	lbu	a2,-2040(gp) # 20000008 <digit_state.1>
 		if(millis() - disp_last_refresh > DISPLAY_REFRESH_MILLIS)
  33c:	8101a703          	lw	a4,-2032(gp) # 20000010 <g_systick_millis>
- 340:	4589                	li	a1,2
- 342:	8f15                	sub	a4,a4,a3
- 344:	fee5fce3          	bgeu	a1,a4,33c <main+0x16c>
- 348:	58c00593          	li	a1,1420
+ 340:	1f400593          	li	a1,500
+ 344:	8f15                	sub	a4,a4,a3
+ 346:	fee5fbe3          	bgeu	a1,a4,33c <main+0x16c>
+ 34a:	59000593          	li	a1,1424
 		gpio_digital_write(segment_pin[seg_idx], seg_bit);
- 34c:	4198                	lw	a4,0(a1)
- 34e:	4502                	lw	a0,0(sp)
+ 34e:	4198                	lw	a4,0(a1)
+ 350:	4502                	lw	a0,0(sp)
 	for(uint16_t seg_idx = 0; seg_idx < 15; seg_idx++)
- 350:	0591                	addi	a1,a1,4
+ 352:	0591                	addi	a1,a1,4
 	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
- 352:	00875693          	srli	a3,a4,0x8
+ 354:	00875693          	srli	a3,a4,0x8
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
- 356:	0ff77713          	zext.b	a4,a4
- 35a:	070a                	slli	a4,a4,0x2
- 35c:	972a                	add	a4,a4,a0
- 35e:	4318                	lw	a4,0(a4)
+ 358:	0ff77713          	zext.b	a4,a4
+ 35c:	070a                	slli	a4,a4,0x2
+ 35e:	972a                	add	a4,a4,a0
+ 360:	4318                	lw	a4,0(a4)
 	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
- 360:	00d496b3          	sll	a3,s1,a3
+ 362:	00d496b3          	sll	a3,s1,a3
 	if(state == GPIO_LOW) mask = mask << 16;  // Shift by 16 if LOW, to Reset
- 364:	06c2                	slli	a3,a3,0x10
+ 366:	06c2                	slli	a3,a3,0x10
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
- 366:	cb14                	sw	a3,16(a4)
- 368:	5c800713          	li	a4,1480
- 36c:	feb710e3          	bne	a4,a1,34c <main+0x17c>
+ 368:	cb14                	sw	a3,16(a4)
+ 36a:	5cc00713          	li	a4,1484
+ 36e:	feb710e3          	bne	a4,a1,34e <main+0x17e>
 	if(state == GPIO_LOW) mask = mask << 16;  // Shift by 16 if LOW, to Reset
- 370:	00800737          	lui	a4,0x800
- 374:	c219                	beqz	a2,37a <main+0x1aa>
+ 372:	00800737          	lui	a4,0x800
+ 376:	c219                	beqz	a2,37c <main+0x1ac>
 	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
- 376:	08000713          	li	a4,128
+ 378:	08000713          	li	a4,128
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
- 37a:	cb98                	sw	a4,16(a5)
-
+ 37c:	cb98                	sw	a4,16(a5)
+	// Blank all the segments to prevent ghosting
+	disp_write(0x0000);
 	// Write the current digit state
-	gpio_digital_write(digit_pin, digit_state);
-	
+	gpio_digital_write(digit_pin, digit_state);	
 	// Write the global segment data to the segment chosen
 	disp_write(g_seg_data[digit_state]);
- 37c:	00430693          	addi	a3,t1,4
- 380:	00161713          	slli	a4,a2,0x1
- 384:	9736                	add	a4,a4,a3
- 386:	00075383          	lhu	t2,0(a4) # 800000 <lib_uart.c.02352773+0x7fcd2f>
- 38a:	58c00513          	li	a0,1420
- 38e:	4581                	li	a1,0
+ 37e:	00430693          	addi	a3,t1,4
+ 382:	00161713          	slli	a4,a2,0x1
+ 386:	9736                	add	a4,a4,a3
+ 388:	00075383          	lhu	t2,0(a4) # 800000 <lib_uart.c.02352773+0x7fcd2a>
+ 38c:	59000513          	li	a0,1424
+ 390:	4581                	li	a1,0
 		gpio_digital_write(segment_pin[seg_idx], seg_bit);
- 390:	4118                	lw	a4,0(a0)
+ 392:	4118                	lw	a4,0(a0)
 		uint8_t seg_bit = (seg_data >> seg_idx) & 0x01;
- 392:	40b3d2b3          	sra	t0,t2,a1
+ 394:	40b3d2b3          	sra	t0,t2,a1
 	if(state == GPIO_LOW) mask = mask << 16;  // Shift by 16 if LOW, to Reset
- 396:	0012f293          	andi	t0,t0,1
+ 398:	0012f293          	andi	t0,t0,1
 	uint32_t mask = 0x01 << byte[1];          // Shift by pin number
- 39a:	00875693          	srli	a3,a4,0x8
- 39e:	00d496b3          	sll	a3,s1,a3
+ 39c:	00875693          	srli	a3,a4,0x8
+ 3a0:	00d496b3          	sll	a3,s1,a3
 	if(state == GPIO_LOW) mask = mask << 16;  // Shift by 16 if LOW, to Reset
- 3a2:	00029363          	bnez	t0,3a8 <main+0x1d8>
- 3a6:	06c2                	slli	a3,a3,0x10
+ 3a4:	00029363          	bnez	t0,3aa <main+0x1da>
+ 3a8:	06c2                	slli	a3,a3,0x10
 	GPIO_PORT_MAP[ byte[0] ]->BSHR = mask;
- 3a8:	4282                	lw	t0,0(sp)
- 3aa:	0ff77713          	zext.b	a4,a4
- 3ae:	070a                	slli	a4,a4,0x2
- 3b0:	9716                	add	a4,a4,t0
- 3b2:	4318                	lw	a4,0(a4)
+ 3aa:	4282                	lw	t0,0(sp)
+ 3ac:	0ff77713          	zext.b	a4,a4
+ 3b0:	070a                	slli	a4,a4,0x2
+ 3b2:	9716                	add	a4,a4,t0
+ 3b4:	4318                	lw	a4,0(a4)
 	for(uint16_t seg_idx = 0; seg_idx < 15; seg_idx++)
- 3b4:	0585                	addi	a1,a1,1
- 3b6:	0511                	addi	a0,a0,4
- 3b8:	cb14                	sw	a3,16(a4)
- 3ba:	473d                	li	a4,15
- 3bc:	fce59ae3          	bne	a1,a4,390 <main+0x1c0>
+ 3b6:	0585                	addi	a1,a1,1
+ 3b8:	0511                	addi	a0,a0,4
+ 3ba:	cb14                	sw	a3,16(a4)
+ 3bc:	473d                	li	a4,15
+ 3be:	fce59ae3          	bne	a1,a4,392 <main+0x1c2>
 			disp_last_refresh = millis();
- 3c0:	8101a683          	lw	a3,-2032(gp) # 20000010 <g_systick_millis>
+ 3c2:	8101a683          	lw	a3,-2032(gp) # 20000010 <g_systick_millis>
 
 	// Invert the digit_state for the next loop
 	digit_state = !digit_state;
- 3c4:	00163613          	seqz	a2,a2
+ 3c6:	00163613          	seqz	a2,a2
 			disp_last_refresh = millis();
- 3c8:	bf95                	j	33c <main+0x16c>
+ 3ca:	bf8d                	j	33c <main+0x16c>
 		gpio_set_mode(GPIO_PD1, INPUT_FLOATING);
- 3ca:	4591                	li	a1,4
- 3cc:	10300513          	li	a0,259
- 3d0:	39c1                	jal	a0 <gpio_set_mode>
+ 3cc:	4591                	li	a1,4
+ 3ce:	10300513          	li	a0,259
+ 3d2:	31f9                	jal	a0 <gpio_set_mode>
 		while(1) { }
- 3d2:	a001                	j	3d2 <main+0x202>
+ 3d4:	a001                	j	3d4 <main+0x204>
 
-000003d4 <SysTick_Handler>:
+000003d6 <SysTick_Handler>:
 {
- 3d4:	1151                	addi	sp,sp,-12
- 3d6:	c03e                	sw	a5,0(sp)
+ 3d6:	1151                	addi	sp,sp,-12
+ 3d8:	c03e                	sw	a5,0(sp)
 	SysTick->CMP += SYSTICK_ONE_MILLISECOND;
- 3d8:	e000f7b7          	lui	a5,0xe000f
+ 3da:	e000f7b7          	lui	a5,0xe000f
 {
- 3dc:	c23a                	sw	a4,4(sp)
+ 3de:	c23a                	sw	a4,4(sp)
 	SysTick->CMP += SYSTICK_ONE_MILLISECOND;
- 3de:	4b98                	lw	a4,16(a5)
+ 3e0:	4b98                	lw	a4,16(a5)
 {
- 3e0:	c436                	sw	a3,8(sp)
+ 3e2:	c436                	sw	a3,8(sp)
 	SysTick->CMP += SYSTICK_ONE_MILLISECOND;
- 3e2:	66b1                	lui	a3,0xc
- 3e4:	b8068693          	addi	a3,a3,-1152 # bb80 <lib_uart.c.02352773+0x88af>
- 3e8:	9736                	add	a4,a4,a3
- 3ea:	cb98                	sw	a4,16(a5)
+ 3e4:	66b1                	lui	a3,0xc
+ 3e6:	b8068693          	addi	a3,a3,-1152 # bb80 <lib_uart.c.02352773+0x88aa>
+ 3ea:	9736                	add	a4,a4,a3
+ 3ec:	cb98                	sw	a4,16(a5)
 	SysTick->SR = 0x00000000;
- 3ec:	0007a223          	sw	zero,4(a5) # e000f004 <__global_pointer$+0xc000e804>
+ 3ee:	0007a223          	sw	zero,4(a5) # e000f004 <__global_pointer$+0xc000e804>
 	g_systick_millis++;
- 3f0:	8101a783          	lw	a5,-2032(gp) # 20000010 <g_systick_millis>
+ 3f2:	8101a783          	lw	a5,-2032(gp) # 20000010 <g_systick_millis>
 }
- 3f4:	46a2                	lw	a3,8(sp)
+ 3f6:	46a2                	lw	a3,8(sp)
 	g_systick_millis++;
- 3f6:	0785                	addi	a5,a5,1
- 3f8:	80f1a823          	sw	a5,-2032(gp) # 20000010 <g_systick_millis>
+ 3f8:	0785                	addi	a5,a5,1
+ 3fa:	80f1a823          	sw	a5,-2032(gp) # 20000010 <g_systick_millis>
 }
- 3fc:	4712                	lw	a4,4(sp)
- 3fe:	4782                	lw	a5,0(sp)
- 400:	0131                	addi	sp,sp,12
- 402:	30200073          	mret
+ 3fe:	4712                	lw	a4,4(sp)
+ 400:	4782                	lw	a5,0(sp)
+ 402:	0131                	addi	sp,sp,12
+ 404:	30200073          	mret
 
-00000406 <USART1_IRQHandler>:
+00000408 <USART1_IRQHandler>:
 /// UART Ring Buffer
 /// @param None
 /// @return None
 void USART1_IRQHandler(void) __attribute__((interrupt));
 void USART1_IRQHandler(void)
 {
- 406:	1131                	addi	sp,sp,-20
- 408:	c03e                	sw	a5,0(sp)
+ 408:	1131                	addi	sp,sp,-20
+ 40a:	c03e                	sw	a5,0(sp)
 	if(USART1->STATR & USART_STATR_RXNE) 
- 40a:	400147b7          	lui	a5,0x40014
+ 40c:	400147b7          	lui	a5,0x40014
 {
- 40e:	c23a                	sw	a4,4(sp)
+ 410:	c23a                	sw	a4,4(sp)
 	if(USART1->STATR & USART_STATR_RXNE) 
- 410:	8007d703          	lhu	a4,-2048(a5) # 40013800 <__global_pointer$+0x20013000>
+ 412:	8007d703          	lhu	a4,-2048(a5) # 40013800 <__global_pointer$+0x20013000>
 {
- 414:	c82e                	sw	a1,16(sp)
- 416:	c632                	sw	a2,12(sp)
- 418:	c436                	sw	a3,8(sp)
+ 416:	c82e                	sw	a1,16(sp)
+ 418:	c632                	sw	a2,12(sp)
+ 41a:	c436                	sw	a3,8(sp)
 	if(USART1->STATR & USART_STATR_RXNE) 
- 41a:	02077713          	andi	a4,a4,32
- 41e:	c759                	beqz	a4,4ac <USART1_IRQHandler+0xa6>
- 420:	80078793          	addi	a5,a5,-2048
+ 41c:	02077713          	andi	a4,a4,32
+ 420:	c759                	beqz	a4,4ae <USART1_IRQHandler+0xa6>
+ 422:	80078793          	addi	a5,a5,-2048
 		static uint8_t char_idx = 0;
 		bool echo_flag = 0;
 
 
 		// Read from the DATAR Register to reset the flag
 		uint8_t recv = (uint8_t)USART1->DATAR;
- 424:	0047d783          	lhu	a5,4(a5)
+ 426:	0047d783          	lhu	a5,4(a5)
 
 		/*** Handle incomming chars ******************************************/
 		// Check if the received byte is a control char
 		// Newline and CR are treated the same
 		if(recv == ASCII_CONTROL_LINE_FEED || 
- 428:	46a9                	li	a3,10
+ 42a:	46a9                	li	a3,10
 		uint8_t recv = (uint8_t)USART1->DATAR;
- 42a:	01079713          	slli	a4,a5,0x10
- 42e:	0ff7f793          	zext.b	a5,a5
- 432:	8341                	srli	a4,a4,0x10
+ 42c:	01079713          	slli	a4,a5,0x10
+ 430:	0ff7f793          	zext.b	a5,a5
+ 434:	8341                	srli	a4,a4,0x10
 		if(recv == ASCII_CONTROL_LINE_FEED || 
- 434:	00d78563          	beq	a5,a3,43e <USART1_IRQHandler+0x38>
- 438:	46b5                	li	a3,13
- 43a:	02d79863          	bne	a5,a3,46a <USART1_IRQHandler+0x64>
+ 436:	00d78563          	beq	a5,a3,440 <USART1_IRQHandler+0x38>
+ 43a:	46b5                	li	a3,13
+ 43c:	02d79863          	bne	a5,a3,46c <USART1_IRQHandler+0x64>
 		   recv == ASCII_CONTROL_CARRIAGE_RETURN)
 		{
 			// Clear displays and reset char counter
 			g_seg_data[0] = 0x0000;
- 43e:	200007b7          	lui	a5,0x20000
- 442:	0007a223          	sw	zero,4(a5) # 20000004 <g_seg_data>
+ 440:	200007b7          	lui	a5,0x20000
+ 444:	0007a223          	sw	zero,4(a5) # 20000004 <g_seg_data>
 			g_seg_data[1] = 0x0000;
 			char_idx = 0;
- 446:	200007b7          	lui	a5,0x20000
- 44a:	00078023          	sb	zero,0(a5) # 20000000 <char_idx.0>
+ 448:	200007b7          	lui	a5,0x20000
+ 44c:	00078023          	sb	zero,0(a5) # 20000000 <char_idx.0>
 
 
 		// Transmit the received byte if the flag is set
 		if(echo_flag)
 		{
 			while(!(USART1->STATR & USART_FLAG_TC));
- 44e:	400147b7          	lui	a5,0x40014
- 452:	80078793          	addi	a5,a5,-2048 # 40013800 <__global_pointer$+0x20013000>
- 456:	0007d683          	lhu	a3,0(a5)
- 45a:	0406f693          	andi	a3,a3,64
- 45e:	dee5                	beqz	a3,456 <USART1_IRQHandler+0x50>
+ 450:	400147b7          	lui	a5,0x40014
+ 454:	80078793          	addi	a5,a5,-2048 # 40013800 <__global_pointer$+0x20013000>
+ 458:	0007d683          	lhu	a3,0(a5)
+ 45c:	0406f693          	andi	a3,a3,64
+ 460:	dee5                	beqz	a3,458 <USART1_IRQHandler+0x50>
 			USART1->DATAR = recv;
- 460:	0ff77713          	zext.b	a4,a4
- 464:	00e79223          	sh	a4,4(a5)
+ 462:	0ff77713          	zext.b	a4,a4
+ 466:	00e79223          	sh	a4,4(a5)
 		}
 	}
 }
- 468:	a091                	j	4ac <USART1_IRQHandler+0xa6>
+ 46a:	a091                	j	4ae <USART1_IRQHandler+0xa6>
 		} else if(recv >= 0x20 && recv <= 0x7E)
- 46a:	1781                	addi	a5,a5,-32
- 46c:	0ff7f613          	zext.b	a2,a5
- 470:	05e00693          	li	a3,94
- 474:	02c6ec63          	bltu	a3,a2,4ac <USART1_IRQHandler+0xa6>
+ 46c:	1781                	addi	a5,a5,-32
+ 46e:	0ff7f613          	zext.b	a2,a5
+ 472:	05e00693          	li	a3,94
+ 476:	02c6ec63          	bltu	a3,a2,4ae <USART1_IRQHandler+0xa6>
 			if(char_idx < 2)
- 478:	200005b7          	lui	a1,0x20000
- 47c:	0005c683          	lbu	a3,0(a1) # 20000000 <char_idx.0>
- 480:	4605                	li	a2,1
- 482:	fcd666e3          	bltu	a2,a3,44e <USART1_IRQHandler+0x48>
+ 47a:	200005b7          	lui	a1,0x20000
+ 47e:	0005c683          	lbu	a3,0(a1) # 20000000 <char_idx.0>
+ 482:	4605                	li	a2,1
+ 484:	fcd666e3          	bltu	a2,a3,450 <USART1_IRQHandler+0x48>
 				g_seg_data[char_idx] = ascii_font[recv - 0x20];
- 486:	20000737          	lui	a4,0x20000
- 48a:	00470713          	addi	a4,a4,4 # 20000004 <g_seg_data>
- 48e:	00169613          	slli	a2,a3,0x1
- 492:	963a                	add	a2,a2,a4
- 494:	0786                	slli	a5,a5,0x1
- 496:	4bc00713          	li	a4,1212
- 49a:	973e                	add	a4,a4,a5
- 49c:	00075783          	lhu	a5,0(a4)
- 4a0:	00f61023          	sh	a5,0(a2) # 2000 <ch32v003fun.c.bbf629ef+0xd6f>
+ 488:	20000737          	lui	a4,0x20000
+ 48c:	00470713          	addi	a4,a4,4 # 20000004 <g_seg_data>
+ 490:	00169613          	slli	a2,a3,0x1
+ 494:	963a                	add	a2,a2,a4
+ 496:	0786                	slli	a5,a5,0x1
+ 498:	4c000713          	li	a4,1216
+ 49c:	973e                	add	a4,a4,a5
+ 49e:	00075783          	lhu	a5,0(a4)
+ 4a2:	00f61023          	sh	a5,0(a2) # 2000 <ch32v003fun.c.bbf629ef+0xd6f>
 				char_idx++;
- 4a4:	00168793          	addi	a5,a3,1
- 4a8:	00f58023          	sb	a5,0(a1)
+ 4a6:	00168793          	addi	a5,a3,1
+ 4aa:	00f58023          	sb	a5,0(a1)
 }
- 4ac:	45c2                	lw	a1,16(sp)
- 4ae:	4632                	lw	a2,12(sp)
- 4b0:	46a2                	lw	a3,8(sp)
- 4b2:	4712                	lw	a4,4(sp)
- 4b4:	4782                	lw	a5,0(sp)
- 4b6:	0151                	addi	sp,sp,20
- 4b8:	30200073          	mret
+ 4ae:	45c2                	lw	a1,16(sp)
+ 4b0:	4632                	lw	a2,12(sp)
+ 4b2:	46a2                	lw	a3,8(sp)
+ 4b4:	4712                	lw	a4,4(sp)
+ 4b6:	4782                	lw	a5,0(sp)
+ 4b8:	0151                	addi	sp,sp,20
+ 4ba:	30200073          	mret
+	...
 
-000004bc <ascii_font>:
- 4bc:	40060000 12ce0202 242412ed 020009db     ...@......$$....
- 4cc:	000f0039 12c03fc0 00c02000 24004000     9....?... ...@.$
- 4dc:	0406243f 008f00db 00ed00e6 240100fd     ?$.............$
- 4ec:	00e700ff 22001200 00c80c00 50a32100     .......".....!.P
- 4fc:	00f702bb 0039128f 0079120f 00bd0071     ......9...y.q...
- 50c:	120900f6 0c70001e 05360038 003f0936     ......p.8.6.6.?.
- 51c:	083f00f3 00ed08f3 003e1201 28362430     ..?.......>.0$6(
- 52c:	00ee2d00 00392409 000f0900 00082800     .-...$9......(..
- 53c:	10580100 00d80878 2058208e 048e14c0     ..X.x.... X ....
- 54c:	10001070 1e002210 10d40030 00dc1050     p...."..0...P...
- 55c:	04860170 08880050 001c0078 28142010     p...P...x.... .(
- 56c:	028e2d00 21492048 0c891200 000024c0     .-..H I!.....$..
+000004c0 <ascii_font>:
+ 4c0:	40060000 12ce0202 242412ed 020009db     ...@......$$....
+ 4d0:	000f0039 12c03fc0 00c02000 24004000     9....?... ...@.$
+ 4e0:	0406243f 008f00db 00ed00e6 240100fd     ?$.............$
+ 4f0:	00e700ff 22001200 00c80c00 50a32100     .......".....!.P
+ 500:	00f702bb 0039128f 0079120f 00bd0071     ......9...y.q...
+ 510:	120900f6 0c70001e 05360038 003f0936     ......p.8.6.6.?.
+ 520:	083f00f3 00ed08f3 003e1201 28362430     ..?.......>.0$6(
+ 530:	00ee2d00 00392409 000f0900 00082800     .-...$9......(..
+ 540:	10580100 00d80878 2058208e 048e14c0     ..X.x.... X ....
+ 550:	10001070 1e002210 10d40030 00dc1050     p...."..0...P...
+ 560:	04860170 08880050 001c0078 28142010     p...P...x.... .(
+ 570:	028e2d00 21492048 0c891200 000024c0     .-..H I!.....$..
 
-0000057c <GPIO_PORT_MAP>:
- 57c:	40010800 00000000 40011000 40011400     ...@.......@...@
+00000580 <GPIO_PORT_MAP>:
+ 580:	40010800 00000000 40011000 40011400     ...@.......@...@
 
-0000058c <segment_pin>:
- 58c:	00000502 00000602 00000702 00000203     ................
- 59c:	00000402 00000100 00000403 00000303     ................
- 5ac:	00000200 00000003 00000002 00000102     ................
- 5bc:	00000202 00000302 00000103              ............
+00000590 <segment_pin>:
+ 590:	00000502 00000602 00000702 00000203     ................
+ 5a0:	00000402 00000100 00000403 00000303     ................
+ 5b0:	00000200 00000003 00000002 00000102     ................
+ 5c0:	00000202 00000302 00000103              ............

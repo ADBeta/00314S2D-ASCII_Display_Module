@@ -31,7 +31,7 @@
 #define micros() (SysTick->CNT / SYSTICK_ONE_MICROSECOND)
 
 // Timing Variables
-#define DISPLAY_REFRESH_MILLIS 2
+#define DISPLAY_REFRESH_MILLIS 500
 
 /*** Globals *****************************************************************/
 // Incremented in the SysTick IRQ once per millisecond
@@ -228,10 +228,8 @@ static void disp_refresh(void)
 
 	// Blank all the segments to prevent ghosting
 	disp_write(0x0000);
-
 	// Write the current digit state
-	gpio_digital_write(digit_pin, digit_state);
-	
+	gpio_digital_write(digit_pin, digit_state);	
 	// Write the global segment data to the segment chosen
 	disp_write(g_seg_data[digit_state]);
 
