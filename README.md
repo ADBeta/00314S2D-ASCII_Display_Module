@@ -29,10 +29,16 @@ U1         CH32V003FxPx TSSOP-20
 DISP1      Red/Green/Blue 14 Segment 2 Digit Common Cathode Display
 ```
 
+## Programming
 Programming is done via the SWIO TestPoint on the back of the PCB.
 Once programmed, SWIO is disabled to be used as a normal GPIO.
 To Reprogram the deivce, connect a programmer to the SWIO pin, and
 power cycle the device - this will put the device into program mode.
+
+1) Connect SWIO Pin
+2) Apply Power to the Module
+3) Run `minichlink -D` to allow NRST to be a GPIO Pin
+4) Flash the binary to the IC
 
 ----
 MIT License
