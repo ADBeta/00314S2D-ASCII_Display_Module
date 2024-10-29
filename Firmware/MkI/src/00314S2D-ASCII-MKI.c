@@ -31,7 +31,7 @@
 #define micros() (SysTick->CNT / SYSTICK_ONE_MICROSECOND)
 
 // Timing Variables
-#define DISPLAY_REFRESH_MILLIS 500
+#define DISPLAY_REFRESH_MILLIS 2
 
 /*** Globals *****************************************************************/
 // Incremented in the SysTick IRQ once per millisecond

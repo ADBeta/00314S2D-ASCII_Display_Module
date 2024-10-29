@@ -4,10 +4,10 @@
 # Built for 4 display modules in a chain, adjustable with settings
 # ADBeta (c) 2024    15 Oct 2024    v0.1.1
 
-DISP_PORT="/dev/ttyUSB0"
+DISP_PORT="/dev/ttyACM0"
 DISP_CHARS=8
 
-DISP_STRING_SPLASH=" ADBeta "
+DISP_STRING_SPLASH="**ADBeta**"
 DISP_STRING_SCROLL="        00314S2D-ASCII DISPLAY MODULE FONT TEST        \
 !\"#\$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_\`abcdefghijklmnopqrstuvwxyz{|}~        "
 
@@ -34,5 +34,5 @@ for offset in $(seq 0 $STRING_ITER); do
 	SUBSTR="${DISP_STRING_SCROLL:offset:DISP_CHARS}"
 	set_disp "$SUBSTR"
 
-	sleep 0.15
+	sleep 0.2
 done

@@ -98,6 +98,7 @@ unbrick:
 	$(MINICHLINK) -u
 
 flash: $(BUILD_DIR)/$(TARGET).bin
+	$(MINICHLINK) -D
 	$(MINICHLINK) -w $< flash -b
 
 clean:
