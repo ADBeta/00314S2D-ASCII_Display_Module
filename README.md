@@ -10,6 +10,16 @@ chain of displays.
 ![PCB 3D](/Images/pcb_cad_3d.jpg?raw=true)
 
 ## How to Use
+Connect a standard UART TX line, running at 115200 Baud to the
+`RX` connection of the module, it is now ready to accept data.  
+Any ASCII characters will be printed to the display, when one displays
+buffer is full, it will echo the data on to the next display.  
+Transmit `\n` or `\r` to clear the displays, this will propegate and 
+clear all displays at once.  
+
+To Daisychain the displays, connect `TX` from one, to `RX` of the next,
+along with VCC and GND - this will allow you to connect [theoretically]
+infinite displays in one chain, the only limit being current on VCC.
 
 ## Building a Module
 BOM
@@ -39,6 +49,15 @@ power cycle the device - this will put the device into program mode.
 2) Apply Power to the Module
 3) Run `minichlink -D` to allow NRST to be a GPIO Pin
 4) Flash the binary to the IC
+
+NOTE: `make` will do both of these steps automatically if the user 
+chooses to use that toolchain
+
+> [TODO]
+> Make MkII PCB with better programming ports
+> Make MkII PCB have MCU and resistors on rear side for easier repair (?)
+> Build automatic testing jig to validate modules before displays are attached
+> Investigate segment failure issue
 
 ----
 MIT License
