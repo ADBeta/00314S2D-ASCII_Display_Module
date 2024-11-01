@@ -54,10 +54,10 @@ NOTE: `make` will do both of these steps automatically if the user
 chooses to use that toolchain
 
 > [TODO]
-> Make MkII PCB with better programming ports
-> Make MkII PCB have MCU and resistors on rear side for easier repair (?)
-> Build automatic testing jig to validate modules before displays are attached
-> Investigate segment failure issue
+> Make MkII PCB with better programming ports  
+> Make MkII PCB have MCU and resistors on rear side for easier repair (?)  
+> Build automatic testing jig to validate modules before displays are attached  
+> Investigate segment failure issue  
 
 ----
 MIT License
